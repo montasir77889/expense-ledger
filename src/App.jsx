@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import * as XLSX from 'xlsx';
 import { loadMonthData, saveMonthData, loadMembers, saveMembers, loadMonthsList, saveMonthsList } from './db/firebase';
 import { getSession, signOut, onAuthChange } from './db/auth';
-import { DEFAULT_MEMBERS, defaultMonthData, monthLabel, daysInMonth } from './utils/helpers';
+import { DEFAULT_MEMBERS, defaultMonthData, monthLabel, daysInMonth, fmt } from './utils/helpers';
 import { computeTotals } from './utils/calculations';
 import TabBar from './components/TabBar';
 import CalendarSheet from './components/CalendarSheet';
@@ -257,6 +257,9 @@ export default function App() {
         }}
           style={{ cursor: 'pointer', userSelect: 'none' }}>
           {monthLabel(monthKey)} ▾
+        </span>
+        <span style={{ fontSize: '.75rem', fontWeight: 600, color: 'var(--accent)', whiteSpace: 'nowrap' }}>
+          ৳{fmt(computeTotals(members, monthData).mealCostPerUnit)}/meal
         </span>
         <button className="btn small secondary" onClick={handleExport} style={{ fontSize: '.7rem', marginLeft: 4 }}>Export</button>
         <button className="btn small secondary" onClick={() => setShowImport(true)} style={{ fontSize: '.7rem' }}>Import</button>
