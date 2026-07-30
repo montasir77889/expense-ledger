@@ -90,30 +90,36 @@ export default function App() {
     })();
   }, []);
 
-  const handleImport = useCallback((parsed) => {
-    if (parsed.members && parsed.members.length) setMembers(parsed.members);
-    if (parsed.meals || parsed.bazar || parsed.bills) {
-      setMonthData(prev => ({
-        ...prev,
-        meals: parsed.meals || prev.meals,
-        bazar: parsed.bazar || prev.bazar,
-        bills: parsed.bills || prev.bills,
-        cookingDuty: parsed.cookingDuty || prev.cookingDuty,
-        watering: parsed.watering || prev.watering,
-        activityLog: parsed.activityLog || prev.activityLog
-      }));
-    }
-    alert('Data imported successfully');
-  }, []);
+  const switchMonth = async (mk) => {
+    if (mk === monthKey) { setShowMonthPicker(false); return; }
+    setMonthData(defaultMonthData());
+    setMonthKey(mk);
+    setActiveTab('calendar');
+    setShowMonthPicker(false);
+    const md = await loadMonthData(mk);
+    setMonthData(md || defaultMonthData());
+  };
 
-  useEffect(() => {
-    if (monthKey && members.length) saveMembers(members).catch(() => {});
-  }, [members, monthKey]);
+  const handleNewMonth = async () => {
+    const hasData = monthData && Object.keys(monthData.meals || {}).length > 0;
+    if (hasData && !window.confirm('Data exists for ' + monthLabel(monthKey) + '. Click OK to continue, Cancel to stay.')) return;
+    const now = new Date();
+    const mk = now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2, '0');
+    if (mk === monthKey) { alert('Already on current month.'); return; }
+    const months = await loadMonthsList();
+    if (!months.includes(mk)) await saveMonthsList([...months, mk]);
+    setShowMonthPicker(false);
+    setMonthsList([...months, mk].filter((v,i,a) => a.indexOf(v)===i));
+    setMonthKey(mk);
+    setMonthData(defaultMonthData());
+    setActiveTab('calendar');
+    const md = await loadMonthData(mk);
+    setMonthData(md || defaultMonthData());
+  };
 
   const handleExport = () => {
     const wb = XLSX.utils.book_new();
     const days = daysInMonth(monthKey);
-
     const mealHeader = ['Name', ...Array.from({length: days}, (_, i) => String(i+1)), 'Total'];
     const mealRows = members.map(m => {
       const meals = monthData.meals[m] || {};
@@ -166,34 +172,25 @@ export default function App() {
     XLSX.writeFile(wb, 'ledger-' + monthKey + '.xlsx');
   };
 
-  const switchMonth = async (mk) => {
-    if (mk === monthKey) { setShowMonthPicker(false); return; }
-    setMonthData(defaultMonthData());
-    setMonthKey(mk);
-    setActiveTab('calendar');
-    setShowMonthPicker(false);
-    const md = await loadMonthData(mk);
-    setMonthData(md || defaultMonthData());
-  };
+  const handleImport = useCallback((parsed) => {
+    if (parsed.members && parsed.members.length) setMembers(parsed.members);
+    if (parsed.meals || parsed.bazar || parsed.bills) {
+      setMonthData(prev => ({
+        ...prev,
+        meals: parsed.meals || prev.meals,
+        bazar: parsed.bazar || prev.bazar,
+        bills: parsed.bills || prev.bills,
+        cookingDuty: parsed.cookingDuty || prev.cookingDuty,
+        watering: parsed.watering || prev.watering,
+        activityLog: parsed.activityLog || prev.activityLog
+      }));
+    }
+    alert('Data imported successfully');
+  }, []);
 
-  const handleNewMonth = async () => {
-    const hasData = monthData && Object.keys(monthData.meals || {}).length > 0;
-    if (hasData && !window.confirm('Data exists for ' + monthLabel(monthKey) + '. Download a backup first?\n\nClick OK to continue without backup, Cancel to stay.')) {
-      return;
-    }
-    const now = new Date();
-    const mk = now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2, '0');
-    if (mk === monthKey) { alert('Already on current month.'); return; }
-    const months = await loadMonthsList();
-    if (!months.includes(mk)) {
-      await saveMonthsList([...months, mk]);
-    }
-    setMonthKey(mk);
-    setMonthData(defaultMonthData());
-    setActiveTab('calendar');
-    const md = await loadMonthData(mk);
-    setMonthData(md || defaultMonthData());
-  };
+  useEffect(() => {
+    if (monthKey && members.length) saveMembers(members).catch(() => {});
+  }, [members, monthKey]);
 
   if (checkingAuth) {
     return <div className="app-loading"><div className="spinner" /><p>Loading...</p></div>;
@@ -249,25 +246,9 @@ export default function App() {
     <div className="app">
       <header className="app-header">
         <h1 className="app-title">Ledger</h1>
-        <span className="month-label month-picker-wrap" onClick={() => setShowMonthPicker(!showMonthPicker)}
-          style={{ cursor: 'pointer', position: 'relative', userSelect: 'none' }}>
+        <span className="month-label" onClick={() => setShowMonthPicker(!showMonthPicker)}
+          style={{ cursor: 'pointer', userSelect: 'none' }}>
           {monthLabel(monthKey)} ▾
-          {showMonthPicker && (
-            <span className="month-picker-wrap" style={{ position: 'absolute', top: '100%', left: 0, marginTop: 4, background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 6, boxShadow: '0 4px 12px rgba(0,0,0,.15)', zIndex: 100, minWidth: 140, overflow: 'hidden' }}>
-              {monthsList.map(mk => (
-                <div key={mk} onClick={() => switchMonth(mk)}
-                  style={{ padding: '8px 14px', fontSize: '.82rem', cursor: 'pointer', background: mk === monthKey ? 'var(--bg)' : '', fontWeight: mk === monthKey ? 700 : 400 }}>
-                  {monthLabel(mk)}
-                </div>
-              ))}
-              <div style={{ borderTop: '1px solid var(--border)' }}>
-                <div onClick={async () => { setShowMonthPicker(false); await handleNewMonth(); }}
-                  style={{ padding: '8px 14px', fontSize: '.82rem', cursor: 'pointer', color: 'var(--accent)' }}>
-                  + New Month
-                </div>
-              </div>
-            </span>
-          )}
         </span>
         <button className="btn small secondary" onClick={handleExport} style={{ fontSize: '.7rem', marginLeft: 4 }}>Export</button>
         <button className="btn small secondary" onClick={() => setShowImport(true)} style={{ fontSize: '.7rem' }}>Import</button>
@@ -282,6 +263,31 @@ export default function App() {
           <button className="btn small secondary" onClick={async () => { await signOut(); }} style={{ fontSize: '.7rem' }}>Logout</button>
         </div>
       </header>
+      {showMonthPicker && (
+        <div style={{
+          position: 'fixed', top: 80, left: 16, zIndex: 100,
+          background: 'var(--surface)', border: '1px solid var(--border)',
+          borderRadius: 8, boxShadow: '0 4px 20px rgba(0,0,0,.2)',
+          minWidth: 160, overflow: 'hidden'
+        }}>
+          {monthsList.map(mk => (
+            <div key={mk} onClick={() => switchMonth(mk)}
+              style={{
+                padding: '10px 16px', fontSize: '.9rem', cursor: 'pointer',
+                background: mk === monthKey ? 'var(--bg)' : '',
+                fontWeight: mk === monthKey ? 700 : 400
+              }}>
+              {monthLabel(mk)}
+            </div>
+          ))}
+          <div style={{ borderTop: '1px solid var(--border)' }}>
+            <div onClick={async () => { setShowMonthPicker(false); await handleNewMonth(); }}
+              style={{ padding: '10px 16px', fontSize: '.9rem', cursor: 'pointer', color: 'var(--accent)' }}>
+              + New Month
+            </div>
+          </div>
+        </div>
+      )}
       <main className="app-main">
         {renderSheet()}
       </main>
