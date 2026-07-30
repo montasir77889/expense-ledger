@@ -19,10 +19,11 @@ export default function DailyActivitySheet({ members, monthData, monthKey, onUpd
   const sortedDates = Object.keys(grouped).sort((a, b) => b.localeCompare(a));
 
   const addBazarEntry = () => {
-    if (!item.trim() || !amount || !bazarMember) return;
+    if (!amount || !bazarMember) return;
     const eid = uid();
-    const entry = { id: eid, item: item.trim(), amount: Number(amount), date: new Date().toISOString().slice(0, 10), timestamp: new Date().toISOString(), user: currentUser || bazarMember };
-    const log = { id: uid(), date: entry.date, timestamp: entry.timestamp, emoji: '🛒', text: 'bazar: ' + entry.item + ' (৳' + entry.amount + ')', user: currentUser || bazarMember, member: bazarMember, amount: entry.amount, type: 'bazar', email: userEmail, refId: eid };
+    const itemName = item.trim() || 'Bazar';
+    const entry = { id: eid, item: itemName, amount: Number(amount), date: new Date().toISOString().slice(0, 10), timestamp: new Date().toISOString(), user: currentUser || bazarMember };
+    const log = { id: uid(), date: entry.date, timestamp: entry.timestamp, emoji: '🛒', text: 'bazar: ' + itemName + ' (৳' + entry.amount + ')', user: currentUser || bazarMember, member: bazarMember, amount: entry.amount, type: 'bazar', email: userEmail, refId: eid };
     onUpdate(prev => ({
       ...prev,
       bazar: { ...prev.bazar, [bazarMember]: [...(prev.bazar[bazarMember] || []), entry] },
