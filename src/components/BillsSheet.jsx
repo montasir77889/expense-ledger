@@ -1,0 +1,160 @@
+import { useState } from 'react';
+import { uid, fmt } from '../utils/helpers';
+
+export default function BillsSheet({ members, monthData, monthKey, onUpdate }) {
+  const [showForm, setShowForm] = useState(false);
+  const [billForm, setBillForm] = useState({ name: '', amount: '', participants: members.slice(), paidBy: '' });
+
+  const setRent = (member, value) => {
+    onUpdate(prev => ({
+      ...prev,
+      bills: { ...prev.bills, houseRent: { ...prev.bills.houseRent, [member]: Number(value) || 0 } }
+    }));
+  };
+
+  const setServiceCharge = (value) => {
+    onUpdate(prev => ({
+      ...prev,
+      bills: { ...prev.bills, serviceCharge: Number(value) || 0 }
+    }));
+  };
+
+  const addUtility = () => {
+    if (!billForm.name || !billForm.amount) return;
+    onUpdate(prev => ({
+      ...prev,
+      bills: {
+        ...prev.bills,
+        utilities: [...(prev.bills.utilities || []), {
+          id: uid(), name: billForm.name, amount: Number(billForm.amount),
+          mode: 'equal', participants: billForm.participants.slice(), customAmounts: {},
+          paidBy: billForm.paidBy || ''
+        }]
+      }
+    }));
+    setBillForm({ name: '', amount: '', participants: members.slice() });
+    setShowForm(false);
+  };
+
+  const deleteUtility = (id) => {
+    onUpdate(prev => ({
+      ...prev,
+      bills: { ...prev.bills, utilities: (prev.bills.utilities || []).filter(u => u.id !== id) }
+    }));
+  };
+
+  const toggleParticipant = (id, member) => {
+    onUpdate(prev => {
+      const utils = (prev.bills.utilities || []).map(u => {
+        if (u.id !== id) return u;
+        const parts = u.participants.includes(member)
+          ? u.participants.filter(p => p !== member)
+          : [...u.participants, member];
+        return { ...u, participants: parts };
+      });
+      return { ...prev, bills: { ...prev.bills, utilities: utils } };
+    });
+  };
+
+  return (
+    <div>
+      <h2 className="section-title">Bills</h2>
+
+      <h3 className="sub-title">House Rent</h3>
+      <div className="excel-table" style={{ marginBottom: 12 }}>
+        {members.map(m => (
+          <div key={m} className="excel-row">
+            <span className="excel-c" style={{ flex: 1, fontWeight: 600 }}>{m}</span>
+            <span className="excel-c" style={{ width: 120, textAlign: 'right' }}>
+              <input type="number" className="excel-input" style={{ width: 100, textAlign: 'right' }}
+                value={monthData.bills.houseRent[m] || ''}
+                onChange={e => setRent(m, e.target.value)} />
+            </span>
+          </div>
+        ))}
+      </div>
+
+      <h3 className="sub-title">Utility Bills</h3>
+      {!showForm && (
+        <button className="btn small" onClick={() => setShowForm(true)} style={{ marginBottom: 8 }}>+ Add Utility</button>
+      )}
+      {showForm && (
+        <div className="card" style={{ marginBottom: 10 }}>
+          <div className="edit-form">
+            <div className="ef-row"><label>Bill Name</label>
+              <input type="text" className="excel-input" value={billForm.name} onChange={e => setBillForm({ ...billForm, name: e.target.value })} />
+            </div>
+            <div className="ef-row"><label>Amount (৳)</label>
+              <input type="number" className="excel-input" value={billForm.amount} onChange={e => setBillForm({ ...billForm, amount: e.target.value })} />
+            </div>
+            <div className="ef-row"><label>Shared by</label>
+              <div className="ef-members">
+                {members.map(m => (
+                  <label key={m} className="ef-member">
+                    <input type="checkbox" checked={billForm.participants.includes(m)}
+                      onChange={e => setBillForm({
+                        ...billForm,
+                        participants: e.target.checked
+                          ? [...billForm.participants, m]
+                          : billForm.participants.filter(p => p !== m)
+                      })} /> {m}
+                  </label>
+                ))}
+              </div>
+            </div>
+            <div className="ef-row"><label>Paid by (optional)</label>
+              <select value={billForm.paidBy} onChange={e => setBillForm({ ...billForm, paidBy: e.target.value })}
+                style={{ border: '1px solid var(--border)', borderRadius: 4, padding: '5px 8px', fontSize: '.78rem', fontFamily: 'inherit', background: 'var(--surface)', width: '100%' }}>
+                <option value="">— Split equally —</option>
+                {members.map(m => <option key={m} value={m}>{m} (paid full)</option>)}
+              </select>
+            </div>
+            <div className="actions-row">
+              <button className="btn small" onClick={addUtility}>Save</button>
+              <button className="btn small secondary" onClick={() => setShowForm(false)}>Cancel</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {(monthData.bills.utilities || []).map(u => (
+        <div key={u.id} className="card" style={{ marginBottom: 6 }}>
+          <div className="bill-row">
+            <strong style={{ flex: 1 }}>{u.name}</strong>
+            <span>৳{fmt(u.amount)}</span>
+            <button className="btn small danger" onClick={() => deleteUtility(u.id)}>✕</button>
+          </div>
+          {u.paidBy && (
+            <div style={{ fontSize: '.75rem', color: 'var(--green)', fontWeight: 600, marginTop: 4 }}>
+              Paid by {u.paidBy}
+            </div>
+          )}
+          <div style={{ marginTop: 4, display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+            {members.map(m => (
+              <label key={m} style={{ fontSize: '.78rem', display: 'flex', alignItems: 'center', gap: 3 }}>
+                <input type="checkbox" checked={u.participants.includes(m)}
+                  onChange={() => toggleParticipant(u.id, m)} /> {m}
+              </label>
+            ))}
+          </div>
+          <div style={{ fontSize: '.75rem', color: 'var(--text-soft)', marginTop: 4 }}>
+            Each: ৳{fmt(u.mode === 'custom' ? 0 : Number(u.amount) / (u.participants.length || 1))}
+          </div>
+        </div>
+      ))}
+
+      <h3 className="sub-title">Service Charge</h3>
+      <div className="card">
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          <span>Total</span>
+          <input type="number" className="excel-input" style={{ width: 120, textAlign: 'right' }}
+            value={monthData.bills.serviceCharge || ''}
+            onChange={e => setServiceCharge(e.target.value)} />
+          <span style={{ fontSize: '.78rem', color: 'var(--text-soft)' }}>
+            Each: ৳{fmt(members.length ? Number(monthData.bills.serviceCharge || 0) / members.length : 0)}
+          </span>
+        </div>
+      </div>
+    </div>
+  );
+}
