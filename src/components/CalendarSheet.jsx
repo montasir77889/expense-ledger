@@ -26,41 +26,41 @@ export default function CalendarSheet({ members, monthData, monthKey, currentUse
   return (
     <div>
       {!currentUser && (
-        <div style={{ padding: '8px 12px', background: '#fff3cd', border: '1px solid #ffc107', borderRadius: 6, marginBottom: 10, fontSize: '.75rem' }}>
-          Select your name from the top-right dropdown so the app knows who's inputting.
+        <div style={{ padding: '6px 10px', background: '#fff3cd', border: '1px solid #ffc107', borderRadius: 6, marginBottom: 8, fontSize: '.7rem' }}>
+          Select your name from the top-right dropdown.
         </div>
       )}
 
-      <div style={{ display: 'flex', gap: 8, marginBottom: 10, flexWrap: 'wrap' }}>
-        <span className="stat-chip">🍚 {t.totalMealUnits.toFixed(1)} meals</span>
-        <span className="stat-chip">🛒 ৳{fmt(t.totalBazar)} bazar</span>
+      <div style={{ display: 'flex', gap: 6, marginBottom: 8, flexWrap: 'wrap' }}>
+        <span className="stat-chip">🍚 {t.totalMealUnits.toFixed(1)}</span>
+        <span className="stat-chip">🛒 ৳{fmt(t.totalBazar)}</span>
         <span className="stat-chip">💰 ৳{fmt(t.mealCostPerUnit)}/meal</span>
       </div>
 
-      <div style={{ overflowX: 'auto', marginBottom: 10, border: '1px solid var(--border)', borderRadius: 'var(--radius)' }}>
-        <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '.72rem' }}>
+      <div style={{ overflowX: 'auto', marginBottom: 8, border: '1px solid var(--border)', borderRadius: 'var(--radius)' }}>
+        <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '.65rem' }}>
           <thead>
             <tr>
-              <th style={{ padding: '4px 6px', background: 'var(--bg)', textAlign: 'left', fontWeight: 600, fontSize: '.68rem' }}>W</th>
+              <th style={{ padding: '2px 4px', background: 'var(--bg)', textAlign: 'left', fontWeight: 600, fontSize: '.6rem' }}>W</th>
               {dayLabels.map(d => (
-                <th key={d} style={{ padding: '4px 2px', background: 'var(--bg)', textAlign: 'center', fontWeight: 600, fontSize: '.65rem', color: (d === 'Sat' || d === 'Sun') ? 'var(--red)' : undefined }}>{d}</th>
+                <th key={d} style={{ padding: '2px 1px', background: 'var(--bg)', textAlign: 'center', fontWeight: 600, fontSize: '.58rem', color: (d === 'Sat' || d === 'Sun') ? 'var(--red)' : undefined }}>{d}</th>
               ))}
             </tr>
           </thead>
           <tbody>
             {weeks.map((row, wi) => (
               <tr key={wi}>
-                <td style={{ padding: '3px 6px', fontWeight: 600, background: 'var(--bg)', fontSize: '.65rem' }}>{wi + 1}</td>
+                <td style={{ padding: '2px 4px', fontWeight: 600, background: 'var(--bg)', fontSize: '.6rem' }}>{wi + 1}</td>
                 {row.map((d, di) => {
                   const isToday = d && y === today.getFullYear() && m === (today.getMonth() + 1) && d === today.getDate();
                   const hasMeal = d && members.some(mem => (monthData.meals[mem] || {})[d] > 0);
                   return (
                     <td key={di} style={{
-                      padding: '3px 2px', textAlign: 'center', fontSize: '.7rem',
+                      padding: '2px 1px', textAlign: 'center', fontSize: '.62rem',
                       background: isToday ? '#dbeafe' : hasMeal ? '#f0fdf4' : undefined,
                       fontWeight: d ? 500 : 400,
                       color: !d ? '#eee' : (di === 0 || di === 6) ? 'var(--red)' : undefined,
-                      borderRadius: isToday ? 3 : 0
+                      borderRadius: isToday ? 2 : 0
                     }}>
                       {d || ''}
                     </td>
@@ -78,12 +78,12 @@ export default function CalendarSheet({ members, monthData, monthKey, currentUse
           const isYou = r.member === currentUser;
           return (
             <div key={r.member} className="excel-row" style={isYou ? { background: '#e8f4e8' } : {}}>
-              <span className="excel-c" style={{ flex: 1, fontWeight: 600, fontSize: '.75rem' }}>
-                {r.member} {isYou && <span style={{ fontSize: '.62rem', color: 'var(--green)', fontWeight: 400 }}>(you)</span>}
+              <span className="excel-c" style={{ flex: 1, fontWeight: 600, fontSize: '.7rem', padding: '4px 6px' }}>
+                {r.member}
               </span>
-              <span className="excel-c" style={{ width: 46, textAlign: 'right', fontSize: '.72rem' }}>{r.meals.toFixed(1)}</span>
-              <span className="excel-c" style={{ width: 64, textAlign: 'right', fontSize: '.72rem' }}>৳{fmt(r.bazar)}</span>
-              <span className="excel-c" style={{ width: 80, textAlign: 'right', fontWeight: 700, fontSize: '.75rem', color: bal > 0 ? 'var(--red)' : 'var(--green)' }}>
+              <span className="excel-c" style={{ width: 40, textAlign: 'right', fontSize: '.65rem', padding: '4px 4px' }}>{r.meals.toFixed(1)}</span>
+              <span className="excel-c" style={{ width: 56, textAlign: 'right', fontSize: '.65rem', padding: '4px 4px' }}>৳{fmt(r.bazar)}</span>
+              <span className="excel-c" style={{ width: 72, textAlign: 'right', fontWeight: 700, fontSize: '.68rem', padding: '4px 4px', color: bal > 0 ? 'var(--red)' : 'var(--green)' }}>
                 ৳{fmt(Math.abs(bal))} {bal > 0 ? 'due' : 'extra'}
               </span>
             </div>
