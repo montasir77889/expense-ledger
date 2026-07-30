@@ -28,13 +28,13 @@ export default function MealsSheet({ members, monthData, monthKey, onUpdate, cur
   const today = new Date();
   const currentDay = today.getFullYear() === y && today.getMonth() + 1 === m ? today.getDate() : 0;
 
-  const colWidth = days > 28 ? 30 : 34;
-  const colTemplate = '78px repeat(' + days + ', ' + colWidth + 'px) 48px';
+  const colWidth = days > 28 ? 38 : 44;
+  const colTemplate = '92px repeat(' + days + ', ' + colWidth + 'px) 56px';
 
   return (
     <div>
       <div style={{ overflowX: 'auto', border: '1px solid var(--border)', borderRadius: 'var(--radius)' }}>
-        <div style={{ display: 'grid', gridTemplateColumns: colTemplate, fontSize: '.7rem', minWidth: days * colWidth + 140 }}>
+        <div style={{ display: 'grid', gridTemplateColumns: colTemplate, fontSize: '.7rem', minWidth: days * colWidth + 155 }}>
           <div className="mg-h mg-name-h">Name</div>
           {Array.from({ length: days }, (_, i) => {
             const day = i + 1;
