@@ -24,6 +24,8 @@ export default function App() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [showImport, setShowImport] = useState(false);
+  const [showMonthPicker, setShowMonthPicker] = useState(false);
+  const [monthsList, setMonthsList] = useState([]);
   const [currentUser, setCurrentUser] = useState(() => localStorage.getItem('mess_current_user') || '');
 
   useEffect(() => {
@@ -38,6 +40,13 @@ export default function App() {
   useEffect(() => {
     if (currentUser) localStorage.setItem('mess_current_user', currentUser);
   }, [currentUser]);
+
+  useEffect(() => {
+    if (!showMonthPicker) return;
+    const handler = () => setShowMonthPicker(false);
+    document.addEventListener('click', handler);
+    return () => document.removeEventListener('click', handler);
+  }, [showMonthPicker]);
 
   const saveCurrentMonth = useCallback(async (data) => {
     if (!monthKey) return;
@@ -64,6 +73,7 @@ export default function App() {
           await saveMonthsList([mk]);
         }
         setMonthKey(mk);
+        setMonthsList(months.length ? months : [mk]);
         const md = await loadMonthData(mk);
         setMonthData(md || defaultMonthData());
       } catch (e) {
@@ -104,6 +114,16 @@ export default function App() {
     a.download = 'ledger-' + monthKey + '.json';
     a.click();
     URL.revokeObjectURL(url);
+  };
+
+  const switchMonth = async (mk) => {
+    if (mk === monthKey) { setShowMonthPicker(false); return; }
+    setMonthData(defaultMonthData());
+    setMonthKey(mk);
+    setActiveTab('calendar');
+    setShowMonthPicker(false);
+    const md = await loadMonthData(mk);
+    setMonthData(md || defaultMonthData());
   };
 
   const handleNewMonth = async () => {
@@ -179,9 +199,28 @@ export default function App() {
     <div className="app">
       <header className="app-header">
         <h1 className="app-title">Ledger</h1>
-        <span className="month-label">{monthLabel(monthKey)}</span>
-        <button className="btn small secondary" onClick={handleExport} style={{ fontSize: '.7rem', marginLeft: 8 }}>Export</button>
-        <button className="btn small secondary" onClick={handleNewMonth} style={{ fontSize: '.7rem' }}>+ New Month</button>
+        <span className="month-label" onClick={() => setShowMonthPicker(!showMonthPicker)}
+          style={{ cursor: 'pointer', position: 'relative', userSelect: 'none' }}>
+          {monthLabel(monthKey)} ▾
+          {showMonthPicker && (
+            <span style={{ position: 'absolute', top: '100%', left: 0, marginTop: 4, background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 6, boxShadow: '0 4px 12px rgba(0,0,0,.15)', zIndex: 100, minWidth: 140, overflow: 'hidden' }}
+              onClick={e => e.stopPropagation()}>
+              {monthsList.map(mk => (
+                <div key={mk} onClick={() => switchMonth(mk)}
+                  style={{ padding: '8px 14px', fontSize: '.82rem', cursor: 'pointer', background: mk === monthKey ? 'var(--bg)' : '', fontWeight: mk === monthKey ? 700 : 400 }}>
+                  {monthLabel(mk)}
+                </div>
+              ))}
+              <div style={{ borderTop: '1px solid var(--border)' }}>
+                <div onClick={async (e) => { e.stopPropagation(); setShowMonthPicker(false); await handleNewMonth(); }}
+                  style={{ padding: '8px 14px', fontSize: '.82rem', cursor: 'pointer', color: 'var(--accent)' }}>
+                  + New Month
+                </div>
+              </div>
+            </span>
+          )}
+        </span>
+        <button className="btn small secondary" onClick={handleExport} style={{ fontSize: '.7rem', marginLeft: 4 }}>Export</button>
         <button className="btn small secondary" onClick={() => setShowImport(true)} style={{ fontSize: '.7rem' }}>Import</button>
         <div style={{ flex: 1 }} />
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
