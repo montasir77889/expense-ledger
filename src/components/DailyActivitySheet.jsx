@@ -121,12 +121,8 @@ export default function DailyActivitySheet({ members, monthData, monthKey, onUpd
                     </span>
                   )}
                   {log.type === 'bazar' && editingId !== log.id && (
-                    <span className="excel-c" style={{ gap: 2, padding: '4px 4px' }}>
-                      <button onClick={() => startEdit(log)}
-                        style={{ border: 'none', background: 'transparent', color: 'var(--accent)', cursor: 'pointer', fontSize: '.7rem', padding: '2px 4px' }}>✎</button>
-                      <button onClick={() => deleteBazarEntry(log)}
-                        style={{ border: 'none', background: 'transparent', color: 'var(--red)', cursor: 'pointer', fontSize: '.7rem', padding: '2px 4px' }}>✕</button>
-                    </span>
+                    <button onClick={() => startEdit(log)}
+                      style={{ border: 'none', background: 'transparent', color: 'var(--accent)', cursor: 'pointer', fontSize: '.7rem', padding: '6px 8px', alignSelf: 'center' }}>✎</button>
                   )}
                 </div>
               ))}

@@ -148,7 +148,7 @@ export default function App() {
   return (
     <div className="app">
       <header className="app-header">
-        <h1 className="app-title">Mess Khata</h1>
+        <h1 className="app-title">Ledger</h1>
         <span className="month-label">{monthLabel(monthKey)}</span>
         <button className="btn small secondary" onClick={() => setShowImport(true)} style={{ fontSize: '.7rem', marginLeft: 8 }}>Import</button>
         <div style={{ flex: 1 }} />

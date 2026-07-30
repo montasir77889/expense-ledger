@@ -15,7 +15,7 @@ export default function AuthPage({ onAuth }) {
   return (
     <div className="login-screen">
       <div className="login-card">
-        <h1 style={{ fontSize: '1.5rem', marginBottom: 4 }}>Mess Khata</h1>
+        <h1 style={{ fontSize: '1.5rem', marginBottom: 4 }}>Ledger</h1>
         <p style={{ fontSize: '.82rem', color: 'var(--text-soft)', marginBottom: 20 }}>Sign in to continue</p>
 
         <button onClick={handleGoogle} className="btn" style={{
