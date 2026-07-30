@@ -311,6 +311,12 @@ input[type="number"].excel-input { text-align: right; }
   padding: 4px 2px;
   outline: none;
   color: var(--text);
+  -moz-appearance: textfield;
+}
+.mg-input::-webkit-inner-spin-button,
+.mg-input::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
 }
 .mg-input:focus {
   background: #e8f0fe;
