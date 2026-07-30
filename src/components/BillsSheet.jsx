@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { uid, fmt } from '../utils/helpers';
+import { uid, fmt, ROOMS, defaultElectricityPresent } from '../utils/helpers';
 
 export default function BillsSheet({ members, monthData, monthKey, onUpdate }) {
   const [showForm, setShowForm] = useState(false);
@@ -19,6 +19,33 @@ export default function BillsSheet({ members, monthData, monthKey, onUpdate }) {
       bills: { ...prev.bills, serviceCharge: Number(value) || 0 }
     }));
   };
+
+  const setElectricityTotal = (value) => {
+    const total = Number(value) || 0;
+    onUpdate(prev => {
+      const eb = prev.bills.electricityBill || { total: 0, present: {} };
+      if (!Object.keys(eb.present).length) eb.present = defaultElectricityPresent();
+      return { ...prev, bills: { ...prev.bills, electricityBill: { ...eb, total } } };
+    });
+  };
+
+  const toggleRoomPresence = (roomIdx, member) => {
+    onUpdate(prev => {
+      const eb = { ...(prev.bills.electricityBill || { total: 0, present: {} }) };
+      if (!eb.present) eb.present = {};
+      const roomPresent = [...(eb.present[roomIdx] || ROOMS[roomIdx].members)];
+      if (roomPresent.includes(member)) {
+        eb.present = { ...eb.present, [roomIdx]: roomPresent.filter(m => m !== member) };
+      } else {
+        eb.present = { ...eb.present, [roomIdx]: [...roomPresent, member] };
+      }
+      return { ...prev, bills: { ...prev.bills, electricityBill: eb } };
+    });
+  };
+
+  const eb = monthData.bills.electricityBill || { total: 0, present: {} };
+  const ebPresent = eb.present || {};
+  const electricityPerRoom = ROOMS.length ? eb.total / ROOMS.length : 0;
 
   const saveUtility = () => {
     if (!billForm.name || !billForm.amount) return;
@@ -76,6 +103,43 @@ export default function BillsSheet({ members, monthData, monthKey, onUpdate }) {
             </span>
           </div>
         ))}
+      </div>
+
+      <h3 className="sub-title">Electricity Bill</h3>
+      <div className="card" style={{ marginBottom: 12 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10 }}>
+          <span>Total</span>
+          <input type="number" className="excel-input" style={{ width: 120, textAlign: 'right' }}
+            value={eb.total || ''}
+            onChange={e => setElectricityTotal(e.target.value)} />
+          <span style={{ fontSize: '.78rem', color: 'var(--text-soft)' }}>
+            ৳{fmt(electricityPerRoom)}/room
+          </span>
+        </div>
+        {ROOMS.map((room, ri) => {
+          const present = ebPresent[ri] || room.members;
+          const roomShare = electricityPerRoom;
+          const perHead = present.length ? roomShare / present.length : 0;
+          return (
+            <div key={ri} className="card" style={{ marginBottom: 6, padding: '8px 10px', border: '1px solid var(--border)', borderRadius: 'var(--radius)' }}>
+              <div style={{ fontWeight: 600, fontSize: '.78rem', marginBottom: 4 }}>{room.name} — ৳{fmt(roomShare)}</div>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+                {room.members.map(m => {
+                  const isPresent = present.includes(m);
+                  return (
+                    <label key={m} style={{ fontSize: '.78rem', display: 'flex', alignItems: 'center', gap: 4, cursor: 'pointer', padding: '3px 8px', borderRadius: 4, background: isPresent ? '#e8f4e8' : '#fff0f0', border: '1px solid', borderColor: isPresent ? 'var(--green)' : 'var(--red)' }}>
+                      <input type="checkbox" checked={isPresent}
+                        onChange={() => toggleRoomPresence(ri, m)} />
+                      <span>{m}</span>
+                      {isPresent && <span style={{ fontSize: '.65rem', color: 'var(--text-soft)' }}>৳{fmt(perHead)}</span>}
+                      {!isPresent && <span style={{ fontSize: '.65rem', color: 'var(--red)' }}>absent</span>}
+                    </label>
+                  );
+                })}
+              </div>
+            </div>
+          );
+        })}
       </div>
 
       <h3 className="sub-title">Utility Bills</h3>

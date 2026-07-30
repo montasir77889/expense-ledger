@@ -1,4 +1,4 @@
-import { parseNum } from './helpers';
+import { parseNum, ROOMS } from './helpers';
 
 export function computeTotals(members, monthData) {
   const totalBazar = members.reduce((s, m) =>
@@ -38,19 +38,36 @@ export function computeTotals(members, monthData) {
     }
   });
 
+  // Electricity bill: room-based splitting
+  const electricityByMember = {};
+  members.forEach(m => electricityByMember[m] = 0);
+  const eb = monthData.bills.electricityBill || { total: 0, present: {} };
+  const roomsPresent = eb.present || {};
+  const totalElectricity = Number(eb.total) || 0;
+  const perRoom = ROOMS.length ? totalElectricity / ROOMS.length : 0;
+  ROOMS.forEach((room, ri) => {
+    const present = roomsPresent[ri] || room.members;
+    const perHead = present.length ? perRoom / present.length : 0;
+    present.forEach(m => {
+      electricityByMember[m] = (electricityByMember[m] || 0) + perHead;
+    });
+  });
+
   const serviceChargeShare = members.length ? Number(monthData.bills.serviceCharge || 0) / members.length : 0;
 
   const rows = members.map(m => {
     const mealBill = mealCostPerUnit * mealsByMember[m] - bazarByMember[m];
     const utilityBill = utilityByMember[m] || 0;
+    const electricityBill = electricityByMember[m] || 0;
     const rent = Number(monthData.bills.houseRent[m] || 0);
-    const total = mealBill + utilityBill + serviceChargeShare + rent;
+    const total = mealBill + utilityBill + electricityBill + serviceChargeShare + rent;
     return {
       member: m,
       meals: mealsByMember[m],
       bazar: bazarByMember[m],
       mealBill,
       utilityBill,
+      electricityBill,
       rent,
       serviceCharge: serviceChargeShare,
       total
@@ -62,6 +79,7 @@ export function computeTotals(members, monthData) {
     totalMealUnits,
     mealCostPerUnit,
     serviceChargeShare,
+    totalElectricity,
     rows,
     grandTotal: rows.reduce((a, r) => a + r.total, 0)
   };

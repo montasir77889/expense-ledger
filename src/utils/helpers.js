@@ -1,6 +1,11 @@
 export const DEFAULT_MEMBERS = ['Afsan', 'Ridwan', 'Muntasir', 'Shafi', 'Emon', 'Ashiq'];
 export const DOW = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 export const UTILITY_SUGGESTIONS = ['Electricity', 'Gas', 'Water', 'Internet', 'Waste', 'Security', 'Maintenance'];
+export const ROOMS = [
+  { name: 'Room 1', members: ['Afsan', 'Ridwan'] },
+  { name: 'Room 2', members: ['Emon', 'Ashiq'] },
+  { name: 'Room 3', members: ['Muntasir', 'Shafi'] },
+];
 
 let uidCounter = Date.now();
 export function uid() { return (++uidCounter).toString(36); }
@@ -34,8 +39,15 @@ export function defaultMonthData() {
     bazar: {},
     cookingDuty: {},
     watering: {},
-    bills: { houseRent: {}, serviceCharge: 0, utilities: [] },
+    bills: { houseRent: {}, serviceCharge: 0, utilities: [], electricityBill: { total: 0, present: {} } },
     activityLog: [],
     checkin: {}
   };
+}
+
+export function defaultElectricityPresent() {
+  return ROOMS.reduce((acc, room, i) => {
+    acc[i] = [...room.members];
+    return acc;
+  }, {});
 }

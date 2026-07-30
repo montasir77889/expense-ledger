@@ -148,17 +148,19 @@ export default function App() {
       XLSX.utils.book_append_sheet(wb, wsBazar, 'Bazar');
     }
 
+    const computed = computeTotals(members, monthData);
     const billRows = members.map(m => {
       const rent = Number(monthData.bills.houseRent[m] || 0);
-      const mealBill = computeTotals(members, monthData).rows.find(r => r.member === m)?.mealBill || 0;
+      const mealBill = computed.rows.find(r => r.member === m)?.mealBill || 0;
       const utility = (monthData.bills.utilities || []).filter(u => u.participants.includes(m))
         .reduce((a, u) => a + Number(u.amount) / u.participants.length, 0);
+      const electricity = computed.rows.find(r => r.member === m)?.electricityBill || 0;
       const sc = members.length ? Number(monthData.bills.serviceCharge || 0) / members.length : 0;
-      const total = mealBill + utility + sc + rent;
-      return [m, rent, utility, sc, mealBill, total];
+      const total = mealBill + utility + electricity + sc + rent;
+      return [m, rent, utility, electricity, sc, mealBill, total];
     });
     const wsBills = XLSX.utils.aoa_to_sheet([
-      ['Member', 'Rent', 'Utility', 'Service Charge', 'Meal Bill', 'Balance'],
+      ['Member', 'Rent', 'Utility', 'Electricity', 'Service Charge', 'Meal Bill', 'Balance'],
       ...billRows
     ]);
     XLSX.utils.book_append_sheet(wb, wsBills, 'Summary');

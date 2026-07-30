@@ -11,6 +11,7 @@ export default function ReportsSheet({ members, monthData }) {
   const totalUtil = (monthData.bills.utilities || []).reduce((a, u) => a + Number(u.amount || 0), 0);
   const totalRent = members.reduce((a, m) => a + Number(monthData.bills.houseRent[m] || 0), 0);
   const totalSC = members.length ? Number(monthData.bills.serviceCharge || 0) : 0;
+  const totalElec = t.totalElectricity || 0;
 
   return (
     <div>
@@ -22,6 +23,7 @@ export default function ReportsSheet({ members, monthData }) {
           <span className="excel-c" style={{ width: 60, textAlign: 'right' }}>Meals</span>
           <span className="excel-c" style={{ width: 80, textAlign: 'right' }}>Bazar</span>
           <span className="excel-c" style={{ width: 80, textAlign: 'right' }}>Utilities</span>
+          <span className="excel-c" style={{ width: 70, textAlign: 'right' }}>Electric</span>
           <span className="excel-c" style={{ width: 80, textAlign: 'right' }}>Rent</span>
           <span className="excel-c" style={{ width: 70, textAlign: 'right' }}>S/Chg</span>
           <span className="excel-c" style={{ width: 100, textAlign: 'right' }}>Balance</span>
@@ -34,6 +36,7 @@ export default function ReportsSheet({ members, monthData }) {
               <span className="excel-c" style={{ width: 60, textAlign: 'right' }}>{r.meals.toFixed(1)}</span>
               <span className="excel-c" style={{ width: 80, textAlign: 'right' }}>৳{fmt(r.bazar)}</span>
               <span className="excel-c" style={{ width: 80, textAlign: 'right' }}>৳{fmt(r.utilityBill)}</span>
+              <span className="excel-c" style={{ width: 70, textAlign: 'right' }}>৳{fmt(r.electricityBill)}</span>
               <span className="excel-c" style={{ width: 80, textAlign: 'right' }}>৳{fmt(r.rent)}</span>
               <span className="excel-c" style={{ width: 70, textAlign: 'right' }}>৳{fmt(r.serviceCharge)}</span>
               <span className="excel-c" style={{ width: 100, textAlign: 'right', fontWeight: 700, color: bal > 0 ? 'var(--red)' : 'var(--green)' }}>
@@ -47,6 +50,7 @@ export default function ReportsSheet({ members, monthData }) {
           <span className="excel-c" style={{ width: 60, textAlign: 'right' }}>{t.totalMealUnits.toFixed(1)}</span>
           <span className="excel-c" style={{ width: 80, textAlign: 'right' }}>৳{fmt(t.totalBazar)}</span>
           <span className="excel-c" style={{ width: 80, textAlign: 'right' }}>৳{fmt(totalUtil)}</span>
+          <span className="excel-c" style={{ width: 70, textAlign: 'right' }}>৳{fmt(totalElec)}</span>
           <span className="excel-c" style={{ width: 80, textAlign: 'right' }}>৳{fmt(totalRent)}</span>
           <span className="excel-c" style={{ width: 70, textAlign: 'right' }}>৳{fmt(totalSC)}</span>
           <span className="excel-c" style={{ width: 100, textAlign: 'right' }}>৳{fmt(t.grandTotal)}</span>
