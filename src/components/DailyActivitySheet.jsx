@@ -5,6 +5,9 @@ export default function DailyActivitySheet({ members, monthData, monthKey, onUpd
   const [item, setItem] = useState('');
   const [amount, setAmount] = useState('');
   const [bazarMember, setBazarMember] = useState(currentUser || members[0] || '');
+  const [editingId, setEditingId] = useState(null);
+  const [editItem, setEditItem] = useState('');
+  const [editAmount, setEditAmount] = useState('');
 
   const logs = (monthData.activityLog || []).slice().reverse();
   const grouped = {};
@@ -36,12 +39,35 @@ export default function DailyActivitySheet({ members, monthData, monthKey, onUpd
       if (updatedBazar[memberName]) {
         updatedBazar[memberName] = updatedBazar[memberName].filter(e => e.id !== logEntry.refId);
       }
-      return {
-        ...prev,
-        bazar: updatedBazar,
-        activityLog: (prev.activityLog || []).filter(l => l.id !== logEntry.id)
-      };
+      return { ...prev, bazar: updatedBazar, activityLog: (prev.activityLog || []).filter(l => l.id !== logEntry.id) };
     });
+  };
+
+  const startEdit = (log) => {
+    setEditingId(log.id);
+    const match = log.text.match(/bazar:\s*(.+?)\s*\(/);
+    setEditItem(match ? match[1] : '');
+    setEditAmount(String(log.amount));
+  };
+
+  const saveEdit = (log) => {
+    if (!editItem.trim() || !editAmount) return;
+    const newAmount = Number(editAmount);
+    const newText = 'bazar: ' + editItem.trim() + ' (৳' + newAmount + ')';
+    const memberName = log.member;
+    onUpdate(prev => ({
+      ...prev,
+      bazar: {
+        ...prev.bazar,
+        [memberName]: (prev.bazar[memberName] || []).map(e =>
+          e.id === log.refId ? { ...e, item: editItem.trim(), amount: newAmount } : e
+        )
+      },
+      activityLog: (prev.activityLog || []).map(l =>
+        l.id === log.id ? { ...l, text: newText, amount: newAmount } : l
+      )
+    }));
+    setEditingId(null);
   };
 
   return (
@@ -73,17 +99,32 @@ export default function DailyActivitySheet({ members, monthData, monthKey, onUpd
                 <div key={i} className="excel-row" style={{ alignItems: 'stretch' }}>
                   <span className="excel-c" style={{ width: 30, textAlign: 'center', fontSize: '.85rem' }}>{log.emoji || '📝'}</span>
                   <span className="excel-c" style={{ width: 70, fontWeight: 600, fontSize: '.78rem' }}>{log.user || log.member || '—'}</span>
-                  <span className="excel-c" style={{ flex: 1, fontSize: '.78rem' }}>{log.text}
-                    {log.email && <span style={{ display: 'block', fontSize: '.65rem', color: 'var(--text-soft)', fontWeight: 400 }}>by {log.email}</span>}
-                  </span>
-                  {log.amount > 0 && (
+                  {editingId === log.id ? (
+                    <span className="excel-c" style={{ flex: 1, gap: 4 }}>
+                      <input type="text" value={editItem} onChange={e => setEditItem(e.target.value)}
+                        style={{ width: '40%', border: '1px solid var(--border)', borderRadius: 3, padding: '2px 6px', fontSize: '.78rem', fontFamily: 'inherit' }} />
+                      <input type="number" value={editAmount} onChange={e => setEditAmount(e.target.value)}
+                        style={{ width: 80, border: '1px solid var(--border)', borderRadius: 3, padding: '2px 6px', fontSize: '.78rem', fontFamily: 'inherit', textAlign: 'right' }} />
+                      <button className="btn small" onClick={() => saveEdit(log)} style={{ padding: '2px 8px' }}>✓</button>
+                      <button className="btn small secondary" onClick={() => setEditingId(null)} style={{ padding: '2px 8px' }}>✕</button>
+                    </span>
+                  ) : (
+                    <span className="excel-c" style={{ flex: 1, fontSize: '.78rem' }}>{log.text}
+                      {log.email && <span style={{ display: 'block', fontSize: '.65rem', color: 'var(--text-soft)', fontWeight: 400 }}>by {log.email}</span>}
+                    </span>
+                  )}
+                  {log.amount > 0 && editingId !== log.id && (
                     <span className="excel-c" style={{ width: 60, textAlign: 'right', fontSize: '.75rem', fontWeight: 600 }}>
                       ৳{fmt(log.amount)}
                     </span>
                   )}
-                  {log.type === 'bazar' && (
-                    <button className="btn small danger" onClick={() => deleteBazarEntry(log)}
-                      style={{ border: 'none', background: 'transparent', color: 'var(--red)', cursor: 'pointer', padding: '4px 6px', fontSize: '.75rem', alignSelf: 'center' }}>✕</button>
+                  {log.type === 'bazar' && editingId !== log.id && (
+                    <span className="excel-c" style={{ gap: 2, padding: '4px 4px' }}>
+                      <button onClick={() => startEdit(log)}
+                        style={{ border: 'none', background: 'transparent', color: 'var(--accent)', cursor: 'pointer', fontSize: '.7rem', padding: '2px 4px' }}>✎</button>
+                      <button onClick={() => deleteBazarEntry(log)}
+                        style={{ border: 'none', background: 'transparent', color: 'var(--red)', cursor: 'pointer', fontSize: '.7rem', padding: '2px 4px' }}>✕</button>
+                    </span>
                   )}
                 </div>
               ))}

@@ -3,6 +3,7 @@ import { uid, fmt } from '../utils/helpers';
 
 export default function BillsSheet({ members, monthData, monthKey, onUpdate }) {
   const [showForm, setShowForm] = useState(false);
+  const [editingId, setEditingId] = useState(null);
   const [billForm, setBillForm] = useState({ name: '', amount: '', participants: members.slice(), paidBy: '' });
 
   const setRent = (member, value) => {
@@ -19,21 +20,18 @@ export default function BillsSheet({ members, monthData, monthKey, onUpdate }) {
     }));
   };
 
-  const addUtility = () => {
+  const saveUtility = () => {
     if (!billForm.name || !billForm.amount) return;
-    onUpdate(prev => ({
-      ...prev,
-      bills: {
-        ...prev.bills,
-        utilities: [...(prev.bills.utilities || []), {
-          id: uid(), name: billForm.name, amount: Number(billForm.amount),
-          mode: 'equal', participants: billForm.participants.slice(), customAmounts: {},
-          paidBy: billForm.paidBy || ''
-        }]
-      }
-    }));
-    setBillForm({ name: '', amount: '', participants: members.slice() });
+    const payload = { name: billForm.name, amount: Number(billForm.amount), mode: 'equal', participants: billForm.participants.slice(), customAmounts: {}, paidBy: billForm.paidBy || '' };
+    onUpdate(prev => {
+      const utilities = editingId
+        ? (prev.bills.utilities || []).map(u => u.id === editingId ? { ...u, ...payload } : u)
+        : [...(prev.bills.utilities || []), { id: uid(), ...payload }];
+      return { ...prev, bills: { ...prev.bills, utilities } };
+    });
+    setBillForm({ name: '', amount: '', participants: members.slice(), paidBy: '' });
     setShowForm(false);
+    setEditingId(null);
   };
 
   const deleteUtility = (id) => {
@@ -56,6 +54,12 @@ export default function BillsSheet({ members, monthData, monthKey, onUpdate }) {
     });
   };
 
+  const startEdit = (u) => {
+    setBillForm({ name: u.name, amount: String(u.amount), participants: u.participants.slice(), paidBy: u.paidBy || '' });
+    setEditingId(u.id);
+    setShowForm(true);
+  };
+
   return (
     <div>
       <h2 className="section-title">Bills</h2>
@@ -76,7 +80,7 @@ export default function BillsSheet({ members, monthData, monthKey, onUpdate }) {
 
       <h3 className="sub-title">Utility Bills</h3>
       {!showForm && (
-        <button className="btn small" onClick={() => setShowForm(true)} style={{ marginBottom: 8 }}>+ Add Utility</button>
+        <button className="btn small" onClick={() => { setShowForm(true); setEditingId(null); setBillForm({ name: '', amount: '', participants: members.slice(), paidBy: '' }); }} style={{ marginBottom: 8 }}>+ Add Utility</button>
       )}
       {showForm && (
         <div className="card" style={{ marginBottom: 10 }}>
@@ -110,8 +114,8 @@ export default function BillsSheet({ members, monthData, monthKey, onUpdate }) {
               </select>
             </div>
             <div className="actions-row">
-              <button className="btn small" onClick={addUtility}>Save</button>
-              <button className="btn small secondary" onClick={() => setShowForm(false)}>Cancel</button>
+              <button className="btn small" onClick={saveUtility}>{editingId ? 'Update' : 'Save'}</button>
+              <button className="btn small secondary" onClick={() => { setShowForm(false); setEditingId(null); }}>Cancel</button>
             </div>
           </div>
         </div>
@@ -122,6 +126,7 @@ export default function BillsSheet({ members, monthData, monthKey, onUpdate }) {
           <div className="bill-row">
             <strong style={{ flex: 1 }}>{u.name}</strong>
             <span>৳{fmt(u.amount)}</span>
+            <button className="btn small secondary" onClick={() => startEdit(u)} style={{ padding: '2px 8px', fontSize: '.7rem' }}>✎</button>
             <button className="btn small danger" onClick={() => deleteUtility(u.id)}>✕</button>
           </div>
           {u.paidBy && (

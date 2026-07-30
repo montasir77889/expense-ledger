@@ -1,7 +1,11 @@
+import { useState } from 'react';
 import { computeTotals } from '../utils/calculations';
 import { fmt, daysInMonth } from '../utils/helpers';
 
 export default function MemberSheet({ member, members, monthData, monthKey, onUpdate, currentUser, userEmail }) {
+  const [editingBazarId, setEditingBazarId] = useState(null);
+  const [editItem, setEditItem] = useState('');
+  const [editAmount, setEditAmount] = useState('');
   const days = daysInMonth(monthKey);
   const t = computeTotals(members, monthData);
   const row = t.rows.find(r => r.member === member);
@@ -74,21 +78,45 @@ export default function MemberSheet({ member, members, monthData, monthKey, onUp
               <span className="excel-c" style={{ width: 60 }}>Date</span>
               <span className="excel-c" style={{ flex: 1 }}>Item</span>
               <span className="excel-c" style={{ width: 70, textAlign: 'right' }}>Amount</span>
-              <span className="excel-c" style={{ width: 30 }}></span>
+              <span className="excel-c" style={{ width: 50 }}></span>
             </div>
             {myBazar.map((entry, i) => (
               <div key={i} className="excel-row">
                 <span className="excel-c" style={{ width: 60, fontSize: '.75rem', color: 'var(--text-soft)' }}>{entry.date || (entry.timestamp ? entry.timestamp.slice(0, 10) : '—')}</span>
-                <span className="excel-c" style={{ flex: 1 }}>{entry.item || entry.text || 'Bazar'}</span>
-                <span className="excel-c" style={{ width: 70, textAlign: 'right', fontWeight: 600 }}>৳{fmt(entry.amount)}</span>
-                <span className="excel-c" style={{ width: 30, justifyContent: 'center' }}>
+                {editingBazarId === entry.id ? (
+                  <span className="excel-c" style={{ flex: 1, gap: 4 }}>
+                    <input type="text" value={editItem} onChange={e => setEditItem(e.target.value)}
+                      style={{ width: '45%', border: '1px solid var(--border)', borderRadius: 3, padding: '2px 6px', fontSize: '.78rem', fontFamily: 'inherit' }} />
+                    <input type="number" value={editAmount} onChange={e => setEditAmount(e.target.value)}
+                      style={{ width: 70, border: '1px solid var(--border)', borderRadius: 3, padding: '2px 6px', fontSize: '.78rem', fontFamily: 'inherit', textAlign: 'right' }} />
+                    <button className="btn small" onClick={() => {
+                      if (!editItem.trim() || !editAmount) return;
+                      const na = Number(editAmount);
+                      onUpdate(prev => ({
+                        ...prev,
+                        bazar: { ...prev.bazar, [member]: (prev.bazar[member] || []).map(e => e.id === entry.id ? { ...e, item: editItem.trim(), amount: na } : e) },
+                        activityLog: (prev.activityLog || []).map(l => l.refId === entry.id ? { ...l, text: 'bazar: ' + editItem.trim() + ' (৳' + na + ')', amount: na } : l)
+                      }));
+                      setEditingBazarId(null);
+                    }} style={{ padding: '2px 8px' }}>✓</button>
+                    <button className="btn small secondary" onClick={() => setEditingBazarId(null)} style={{ padding: '2px 8px' }}>✕</button>
+                  </span>
+                ) : (
+                  <span className="excel-c" style={{ flex: 1 }}>{entry.item || entry.text || 'Bazar'}</span>
+                )}
+                {editingBazarId !== entry.id && (
+                  <span className="excel-c" style={{ width: 70, textAlign: 'right', fontWeight: 600 }}>৳{fmt(entry.amount)}</span>
+                )}
+                <span className="excel-c" style={{ width: 50, justifyContent: 'center', gap: 2 }}>
+                  <button onClick={() => { setEditingBazarId(entry.id); setEditItem(entry.item || ''); setEditAmount(String(entry.amount)); }}
+                    style={{ border: 'none', background: 'transparent', color: 'var(--accent)', cursor: 'pointer', fontSize: '.7rem', padding: '2px 4px' }}>✎</button>
                   <button onClick={() => {
                     onUpdate(prev => ({
                       ...prev,
                       bazar: { ...prev.bazar, [member]: (prev.bazar[member] || []).filter(e => e.id !== entry.id) },
                       activityLog: (prev.activityLog || []).filter(l => l.refId !== entry.id)
                     }));
-                  }} style={{ border: 'none', background: 'transparent', color: 'var(--red)', cursor: 'pointer', fontSize: '.78rem', padding: 0 }}>✕</button>
+                  }} style={{ border: 'none', background: 'transparent', color: 'var(--red)', cursor: 'pointer', fontSize: '.7rem', padding: '2px 4px' }}>✕</button>
                 </span>
               </div>
             ))}
