@@ -39,7 +39,7 @@ export function defaultMonthData() {
     bazar: {},
     cookingDuty: {},
     watering: {},
-    bills: { houseRent: {}, serviceCharge: 0, utilities: [], electricityBill: { total: 0, present: {} } },
+    bills: { houseRent: {}, serviceCharge: 0, utilities: [], electricityBill: { total: 0, present: {}, paidBy: '' } },
     activityLog: [],
     checkin: {}
   };

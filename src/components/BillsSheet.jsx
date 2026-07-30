@@ -43,7 +43,15 @@ export default function BillsSheet({ members, monthData, monthKey, onUpdate }) {
     });
   };
 
-  const eb = monthData.bills.electricityBill || { total: 0, present: {} };
+  const setElectricityPaidBy = (value) => {
+    onUpdate(prev => {
+      const eb = { ...(prev.bills.electricityBill || { total: 0, present: {}, paidBy: '' }) };
+      if (!Object.keys(eb.present).length) eb.present = defaultElectricityPresent();
+      return { ...prev, bills: { ...prev.bills, electricityBill: { ...eb, paidBy: value } } };
+    });
+  };
+
+  const eb = monthData.bills.electricityBill || { total: 0, present: {}, paidBy: '' };
   const ebPresent = eb.present || {};
   const electricityPerRoom = ROOMS.length ? eb.total / ROOMS.length : 0;
 
@@ -140,6 +148,14 @@ export default function BillsSheet({ members, monthData, monthKey, onUpdate }) {
             </div>
           );
         })}
+        <div className="ef-row" style={{ marginTop: 8 }}>
+          <label>Paid by (who paid the bill)</label>
+          <select value={eb.paidBy || ''} onChange={e => setElectricityPaidBy(e.target.value)}
+            style={{ border: '1px solid var(--border)', borderRadius: 4, padding: '5px 8px', fontSize: '.78rem', fontFamily: 'inherit', background: 'var(--surface)', width: '100%' }}>
+            <option value="">— Split per room —</option>
+            {members.map(m => <option key={m} value={m}>{m} (paid full)</option>)}
+          </select>
+        </div>
       </div>
 
       <h3 className="sub-title">Utility Bills</h3>

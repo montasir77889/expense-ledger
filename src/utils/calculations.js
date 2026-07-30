@@ -41,7 +41,7 @@ export function computeTotals(members, monthData) {
   // Electricity bill: room-based splitting
   const electricityByMember = {};
   members.forEach(m => electricityByMember[m] = 0);
-  const eb = monthData.bills.electricityBill || { total: 0, present: {} };
+  const eb = monthData.bills.electricityBill || { total: 0, present: {}, paidBy: '' };
   const roomsPresent = eb.present || {};
   const totalElectricity = Number(eb.total) || 0;
   const perRoom = ROOMS.length ? totalElectricity / ROOMS.length : 0;
@@ -52,6 +52,10 @@ export function computeTotals(members, monthData) {
       electricityByMember[m] = (electricityByMember[m] || 0) + perHead;
     });
   });
+  // If one person paid the full bill, credit them the full amount
+  if (eb.paidBy && members.includes(eb.paidBy)) {
+    electricityByMember[eb.paidBy] = (electricityByMember[eb.paidBy] || 0) - totalElectricity;
+  }
 
   const serviceChargeShare = members.length ? Number(monthData.bills.serviceCharge || 0) / members.length : 0;
 
