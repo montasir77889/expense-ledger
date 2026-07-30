@@ -32,7 +32,7 @@ export default function CalendarSheet({ members, monthData, monthKey, currentUse
       )}
 
       <div style={{ display: 'flex', gap: 6, marginBottom: 8, flexWrap: 'wrap' }}>
-        <span className="stat-chip">🍚 {t.totalMealUnits.toFixed(1)}</span>
+        <span className="stat-chip">🍚 {t.totalMealUnits}</span>
         <span className="stat-chip">🛒 ৳{fmt(t.totalBazar)}</span>
         <span className="stat-chip">💰 ৳{fmt(t.mealCostPerUnit)}/meal</span>
       </div>
@@ -81,7 +81,7 @@ export default function CalendarSheet({ members, monthData, monthKey, currentUse
               <span className="excel-c" style={{ flex: 1, fontWeight: 600, fontSize: '.7rem', padding: '4px 6px' }}>
                 {r.member}
               </span>
-              <span className="excel-c" style={{ width: 40, textAlign: 'right', fontSize: '.65rem', padding: '4px 4px' }}>{r.meals.toFixed(1)}</span>
+              <span className="excel-c" style={{ width: 40, textAlign: 'right', fontSize: '.65rem', padding: '4px 4px' }}>{r.meals}</span>
               <span className="excel-c" style={{ width: 56, textAlign: 'right', fontSize: '.65rem', padding: '4px 4px' }}>৳{fmt(r.bazar)}</span>
               <span className="excel-c" style={{ width: 72, textAlign: 'right', fontWeight: 700, fontSize: '.68rem', padding: '4px 4px', color: bal > 0 ? 'var(--red)' : 'var(--green)' }}>
                 ৳{fmt(Math.abs(bal))} {bal > 0 ? 'due' : 'extra'}

@@ -79,7 +79,7 @@ export default function MealsSheet({ members, monthData, monthKey, onUpdate, cur
                     </div>
                   );
                 })}
-                <div className="mg-c" style={{ fontWeight: 700, textAlign: 'center', background: 'var(--bg)', fontSize: '.65rem' }}>{total.toFixed(1)}</div>
+                <div className="mg-c" style={{ fontWeight: 700, textAlign: 'center', background: 'var(--bg)', fontSize: '.65rem' }}>{total}</div>
               </div>
             );
           })}
@@ -89,10 +89,10 @@ export default function MealsSheet({ members, monthData, monthKey, onUpdate, cur
             const day = i + 1;
             const isToday = day === currentDay;
             return (
-              <div key={i} className="mg-c" style={{ fontWeight: 600, fontSize: '.6rem', background: isToday ? '#e8f4e8' : 'var(--bg)' }}>{totalMealPerDay[day].toFixed(1)}</div>
+              <div key={i} className="mg-c" style={{ fontWeight: 600, fontSize: '.6rem', background: isToday ? '#e8f4e8' : 'var(--bg)' }}>{totalMealPerDay[day]}</div>
             );
           })}
-          <div className="mg-c" style={{ fontWeight: 700, fontSize: '.65rem', background: 'var(--bg)' }}>{grandTotal.toFixed(1)}</div>
+          <div className="mg-c" style={{ fontWeight: 700, fontSize: '.65rem', background: 'var(--bg)' }}>{grandTotal}</div>
         </div>
       </div>
     </div>

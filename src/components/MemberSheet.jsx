@@ -50,7 +50,7 @@ export default function MemberSheet({ member, members, monthData, monthKey, onUp
         <div className="badge-card">
           <div className="b-icon">🍚</div>
           <div className="b-title">Meals</div>
-          <div className="b-name">{row.meals.toFixed(1)}</div>
+          <div className="b-name">{row.meals}</div>
         </div>
         <div className="badge-card">
           <div className="b-icon">🛒</div>

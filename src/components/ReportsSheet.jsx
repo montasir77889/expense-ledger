@@ -33,7 +33,7 @@ export default function ReportsSheet({ members, monthData }) {
           return (
             <div key={r.member} className="excel-row">
               <span className="excel-c" style={{ flex: 1, fontWeight: 600 }}>{r.member}</span>
-              <span className="excel-c" style={{ width: 60, textAlign: 'right' }}>{r.meals.toFixed(1)}</span>
+              <span className="excel-c" style={{ width: 60, textAlign: 'right' }}>{r.meals}</span>
               <span className="excel-c" style={{ width: 80, textAlign: 'right' }}>৳{fmt(r.bazar)}</span>
               <span className="excel-c" style={{ width: 80, textAlign: 'right' }}>৳{fmt(r.utilityBill)}</span>
               <span className="excel-c" style={{ width: 70, textAlign: 'right' }}>৳{fmt(r.electricityBill)}</span>
@@ -47,7 +47,7 @@ export default function ReportsSheet({ members, monthData }) {
         })}
         <div className="excel-row" style={{ fontWeight: 700, borderTop: '2px solid var(--text)' }}>
           <span className="excel-c" style={{ flex: 1 }}>Total</span>
-          <span className="excel-c" style={{ width: 60, textAlign: 'right' }}>{t.totalMealUnits.toFixed(1)}</span>
+          <span className="excel-c" style={{ width: 60, textAlign: 'right' }}>{t.totalMealUnits}</span>
           <span className="excel-c" style={{ width: 80, textAlign: 'right' }}>৳{fmt(t.totalBazar)}</span>
           <span className="excel-c" style={{ width: 80, textAlign: 'right' }}>৳{fmt(totalUtil)}</span>
           <span className="excel-c" style={{ width: 70, textAlign: 'right' }}>৳{fmt(totalElec)}</span>

@@ -17,7 +17,15 @@ export function fmt(n) {
 
 export function parseNum(v) {
   if (v === '' || v === undefined || v === null) return 0;
-  const n = typeof v === 'number' ? v : Number(String(v).replace(/,/g, ''));
+  if (typeof v === 'number') return v;
+  let s = String(v).trim();
+  if (s.includes(',') && !s.includes('.')) {
+    if (/,\d{1,2}$/.test(s)) s = s.replace(',', '.');
+    else s = s.replace(/,/g, '');
+  } else {
+    s = s.replace(/,/g, '');
+  }
+  const n = Number(s);
   return isNaN(n) ? 0 : n;
 }
 

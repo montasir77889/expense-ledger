@@ -19,7 +19,7 @@ export default function Dashboard({ members, monthData, monthKey, currentUser })
         <div className="badge-card">
           <div className="b-icon">🍚</div>
           <div className="b-title">Total Meals</div>
-          <div className="b-name">{t.totalMealUnits.toFixed(1)}</div>
+          <div className="b-name">{t.totalMealUnits}</div>
         </div>
         <div className="badge-card">
           <div className="b-icon">🛒</div>
@@ -43,7 +43,7 @@ export default function Dashboard({ members, monthData, monthKey, currentUser })
               <span className="excel-c" style={{ flex: 1, fontWeight: 600 }}>
                 {r.member} {isYou && <span style={{ fontSize: '.68rem', color: 'var(--green)', fontWeight: 400 }}>(you)</span>}
               </span>
-              <span className="excel-c" style={{ width: 60, textAlign: 'right' }}>{r.meals.toFixed(1)}</span>
+              <span className="excel-c" style={{ width: 60, textAlign: 'right' }}>{r.meals}</span>
               <span className="excel-c" style={{ width: 80, textAlign: 'right' }}>৳{fmt(r.bazar)}</span>
               <span className="excel-c" style={{ width: 100, textAlign: 'right', fontWeight: 700, color: bal > 0 ? 'var(--red)' : 'var(--green)' }}>
                 ৳{fmt(Math.abs(bal))} {bal > 0 ? 'due' : 'extra'}
