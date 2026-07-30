@@ -1,3 +1,5 @@
+import { parseNum } from './helpers';
+
 export function computeTotals(members, monthData) {
   const totalBazar = members.reduce((s, m) =>
     s + (monthData.bazar[m] || []).reduce((a, e) => a + Number(e.amount || 0), 0), 0);
@@ -6,7 +8,7 @@ export function computeTotals(members, monthData) {
   let totalMealUnits = 0;
   members.forEach(m => {
     const days = monthData.meals[m] || {};
-    const t = Object.values(days).reduce((a, v) => a + Number(v || 0), 0);
+    const t = Object.values(days).reduce((a, v) => a + parseNum(v), 0);
     mealsByMember[m] = t;
     totalMealUnits += t;
   });

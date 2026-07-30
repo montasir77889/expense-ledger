@@ -10,6 +10,12 @@ export function fmt(n) {
   return Number(n).toFixed(2);
 }
 
+export function parseNum(v) {
+  if (v === '' || v === undefined || v === null) return 0;
+  const n = typeof v === 'number' ? v : Number(String(v).replace(/,/g, ''));
+  return isNaN(n) ? 0 : n;
+}
+
 export function monthLabel(key) {
   if (!key) return '';
   const [y, m] = key.split('-').map(Number);

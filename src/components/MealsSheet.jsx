@@ -1,27 +1,28 @@
-import { daysInMonth } from '../utils/helpers';
+import { daysInMonth, parseNum } from '../utils/helpers';
 
 export default function MealsSheet({ members, monthData, monthKey, onUpdate, currentUser, userEmail }) {
   const days = daysInMonth(monthKey);
   const [y, m] = monthKey.split('-').map(Number);
 
   const setMeal = (member, day, value) => {
+    const v = parseNum(value);
     onUpdate(prev => {
       const meals = { ...prev.meals };
       if (!meals[member]) meals[member] = {};
-      if (value > 0) meals[member] = { ...meals[member], [day]: value };
+      if (v > 0) meals[member] = { ...meals[member], [day]: v };
       else {
         const copy = { ...meals[member] };
         delete copy[day];
         meals[member] = copy;
       }
-      const log = { date: new Date().toISOString().slice(0, 10), timestamp: new Date().toISOString(), emoji: '🍚', text: 'logged ' + value + ' meals on day ' + day, user: currentUser || member, member, amount: 0, type: 'meal', email: userEmail };
+      const log = { date: new Date().toISOString().slice(0, 10), timestamp: new Date().toISOString(), emoji: '🍚', text: 'logged ' + v + ' meals on day ' + day, user: currentUser || member, member, amount: 0, type: 'meal', email: userEmail };
       return { ...prev, meals, activityLog: [...(prev.activityLog || []), log] };
     });
   };
 
   const totalMealPerDay = {};
   for (let d = 1; d <= days; d++) {
-    totalMealPerDay[d] = members.reduce((a, m) => a + Number((monthData.meals[m] || {})[d] || 0), 0);
+    totalMealPerDay[d] = members.reduce((a, m) => a + parseNum((monthData.meals[m] || {})[d]), 0);
   }
   const grandTotal = Object.values(totalMealPerDay).reduce((a, v) => a + v, 0);
   const today = new Date();
@@ -51,7 +52,7 @@ export default function MealsSheet({ members, monthData, monthKey, onUpdate, cur
           <div className="mg-h" style={{ fontWeight: 600 }}>Ttl</div>
 
           {members.map(member => {
-            const total = Object.values(monthData.meals[member] || {}).reduce((a, v) => a + Number(v || 0), 0);
+            const total = Object.values(monthData.meals[member] || {}).reduce((a, v) => a + parseNum(v), 0);
             const isYou = member === currentUser;
             return (
               <div key={member} style={{ display: 'contents' }}>
@@ -61,20 +62,18 @@ export default function MealsSheet({ members, monthData, monthKey, onUpdate, cur
                 {Array.from({ length: days }, (_, i) => {
                   const day = i + 1;
                   const isToday = day === currentDay;
-                  const val = (monthData.meals[member] || {})[day] || '';
-                  const hasVal = (monthData.meals[member] || {})[day] > 0;
+                  const raw = (monthData.meals[member] || {})[day];
+                  const val = raw !== undefined && raw !== null ? raw : '';
                   return (
                     <div key={day} className="mg-c" style={{
                       padding: 0,
-                      background: isToday ? '#f0f7ff' : hasVal ? '#fafdfa' : ''
+                      background: isToday ? '#f0f7ff' : (parseNum(raw) > 0 ? '#fafdfa' : '')
                     }}>
                       <input
-                        type="number"
-                        step="0.5"
-                        min="0"
+                        type="text"
+                        inputMode="decimal"
                         value={val}
-                        placeholder={isToday && !currentDay ? '' : ''}
-                        onChange={e => setMeal(member, day, parseFloat(e.target.value) || 0)}
+                        onChange={e => setMeal(member, day, e.target.value)}
                         className="mg-input"
                       />
                     </div>

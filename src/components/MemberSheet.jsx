@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { computeTotals } from '../utils/calculations';
-import { fmt, daysInMonth } from '../utils/helpers';
+import { fmt, daysInMonth, parseNum } from '../utils/helpers';
 
 export default function MemberSheet({ member, members, monthData, monthKey, onUpdate, currentUser, userEmail }) {
   const [editingBazarId, setEditingBazarId] = useState(null);
@@ -18,22 +18,23 @@ export default function MemberSheet({ member, members, monthData, monthKey, onUp
   const mySC = members.length ? Number(monthData.bills.serviceCharge || 0) / members.length : 0;
 
   const setMeal = (day, value) => {
+    const v = parseNum(value);
     onUpdate(prev => {
       const meals = { ...prev.meals };
       if (!meals[member]) meals[member] = {};
-      if (value > 0) meals[member] = { ...meals[member], [day]: value };
+      if (v > 0) meals[member] = { ...meals[member], [day]: v };
       else {
         const copy = { ...meals[member] };
         delete copy[day];
         meals[member] = copy;
       }
-      const log = { date: new Date().toISOString().slice(0, 10), timestamp: new Date().toISOString(), emoji: '🍚', text: 'logged ' + value + ' meals on day ' + day, user: currentUser || member, member, amount: 0, type: 'meal', email: userEmail };
+      const log = { date: new Date().toISOString().slice(0, 10), timestamp: new Date().toISOString(), emoji: '🍚', text: 'logged ' + v + ' meals on day ' + day, user: currentUser || member, member, amount: 0, type: 'meal', email: userEmail };
       return { ...prev, meals, activityLog: [...(prev.activityLog || []), log] };
     });
   };
 
   const addToMeal = (day, delta) => {
-    const current = myMeals[day] || 0;
+    const current = parseNum(myMeals[day]);
     setMeal(day, Math.max(0, current + delta));
   };
 
@@ -158,21 +159,20 @@ export default function MemberSheet({ member, members, monthData, monthKey, onUp
       <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 12 }}>
         {Array.from({ length: days }, (_, i) => {
           const day = i + 1;
-          const val = myMeals[day] || '';
+          const raw = myMeals[day];
+          const val = raw !== undefined && raw !== null ? raw : '';
           return (
             <div key={day} style={{
               display: 'flex', alignItems: 'center', gap: 2,
               border: '1px solid var(--border)', borderRadius: 4, padding: '2px 4px',
-              background: val ? '#f0fdf4' : 'var(--surface)',
+              background: parseNum(raw) > 0 ? '#f0fdf4' : 'var(--surface)',
               fontSize: '.72rem'
             }}>
               <span style={{ fontWeight: 600, minWidth: 16, textAlign: 'center', fontSize: '.65rem', color: 'var(--text-soft)' }}>{day}</span>
-              <button style={{ border: 'none', background: 'none', cursor: 'pointer', color: 'var(--red)', padding: 0, lineHeight: 1 }} onClick={() => addToMeal(day, -0.25)}>−</button>
-              <input type="number" step="0.25" min="0" value={val}
-                onChange={e => setMeal(day, parseFloat(e.target.value) || 0)}
+              <input type="text" inputMode="decimal" value={val}
+                onChange={e => setMeal(day, e.target.value)}
                 style={{ width: 36, border: 'none', textAlign: 'center', fontSize: '.72rem', fontFamily: 'inherit', background: 'transparent', padding: 0 }}
               />
-              <button style={{ border: 'none', background: 'none', cursor: 'pointer', color: 'var(--green)', padding: 0, lineHeight: 1 }} onClick={() => addToMeal(day, 0.25)}>+</button>
             </div>
           );
         })}
