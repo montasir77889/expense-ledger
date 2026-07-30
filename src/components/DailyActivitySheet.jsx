@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { uid, fmt } from '../utils/helpers';
 
-export default function DailyActivitySheet({ members, monthData, monthKey, onUpdate, currentUser }) {
+export default function DailyActivitySheet({ members, monthData, monthKey, onUpdate, currentUser, userEmail }) {
   const [item, setItem] = useState('');
   const [amount, setAmount] = useState('');
   const [bazarMember, setBazarMember] = useState(currentUser || members[0] || '');
@@ -17,8 +17,9 @@ export default function DailyActivitySheet({ members, monthData, monthKey, onUpd
 
   const addBazarEntry = () => {
     if (!item.trim() || !amount || !bazarMember) return;
-    const entry = { id: uid(), item: item.trim(), amount: Number(amount), date: new Date().toISOString().slice(0, 10), timestamp: new Date().toISOString(), user: currentUser || bazarMember };
-    const log = { date: entry.date, timestamp: entry.timestamp, emoji: '🛒', text: 'bazar: ' + entry.item + ' (৳' + entry.amount + ')', user: currentUser || bazarMember, member: bazarMember, amount: entry.amount, type: 'bazar' };
+    const eid = uid();
+    const entry = { id: eid, item: item.trim(), amount: Number(amount), date: new Date().toISOString().slice(0, 10), timestamp: new Date().toISOString(), user: currentUser || bazarMember };
+    const log = { id: uid(), date: entry.date, timestamp: entry.timestamp, emoji: '🛒', text: 'bazar: ' + entry.item + ' (৳' + entry.amount + ')', user: currentUser || bazarMember, member: bazarMember, amount: entry.amount, type: 'bazar', email: userEmail, refId: eid };
     onUpdate(prev => ({
       ...prev,
       bazar: { ...prev.bazar, [bazarMember]: [...(prev.bazar[bazarMember] || []), entry] },
@@ -26,6 +27,21 @@ export default function DailyActivitySheet({ members, monthData, monthKey, onUpd
     }));
     setItem('');
     setAmount('');
+  };
+
+  const deleteBazarEntry = (logEntry) => {
+    const memberName = logEntry.member;
+    onUpdate(prev => {
+      const updatedBazar = { ...prev.bazar };
+      if (updatedBazar[memberName]) {
+        updatedBazar[memberName] = updatedBazar[memberName].filter(e => e.id !== logEntry.refId);
+      }
+      return {
+        ...prev,
+        bazar: updatedBazar,
+        activityLog: (prev.activityLog || []).filter(l => l.id !== logEntry.id)
+      };
+    });
   };
 
   return (
@@ -54,14 +70,20 @@ export default function DailyActivitySheet({ members, monthData, monthKey, onUpd
             <h3 className="sub-title" style={{ marginBottom: 4 }}>{date}</h3>
             <div className="excel-table">
               {grouped[date].map((log, i) => (
-                <div key={i} className="excel-row">
+                <div key={i} className="excel-row" style={{ alignItems: 'stretch' }}>
                   <span className="excel-c" style={{ width: 30, textAlign: 'center', fontSize: '.85rem' }}>{log.emoji || '📝'}</span>
                   <span className="excel-c" style={{ width: 70, fontWeight: 600, fontSize: '.78rem' }}>{log.user || log.member || '—'}</span>
-                  <span className="excel-c" style={{ flex: 1, fontSize: '.78rem' }}>{log.text}</span>
+                  <span className="excel-c" style={{ flex: 1, fontSize: '.78rem' }}>{log.text}
+                    {log.email && <span style={{ display: 'block', fontSize: '.65rem', color: 'var(--text-soft)', fontWeight: 400 }}>by {log.email}</span>}
+                  </span>
                   {log.amount > 0 && (
                     <span className="excel-c" style={{ width: 60, textAlign: 'right', fontSize: '.75rem', fontWeight: 600 }}>
                       ৳{fmt(log.amount)}
                     </span>
+                  )}
+                  {log.type === 'bazar' && (
+                    <button className="btn small danger" onClick={() => deleteBazarEntry(log)}
+                      style={{ border: 'none', background: 'transparent', color: 'var(--red)', cursor: 'pointer', padding: '4px 6px', fontSize: '.75rem', alignSelf: 'center' }}>✕</button>
                   )}
                 </div>
               ))}

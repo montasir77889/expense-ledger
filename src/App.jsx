@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { loadMonthData, saveMonthData, loadMembers, saveMembers, loadMonthsList, saveMonthsList } from './db/firebase';
+import { getSession, signOut, onAuthChange } from './db/auth';
 import { DEFAULT_MEMBERS, defaultMonthData, monthLabel } from './utils/helpers';
 import TabBar from './components/TabBar';
 import CalendarSheet from './components/CalendarSheet';
@@ -10,9 +11,12 @@ import ReportsSheet from './components/ReportsSheet';
 import SlipsSheet from './components/SlipsSheet';
 import MemberSheet from './components/MemberSheet';
 import ImportModal from './components/ImportModal';
+import AuthPage from './components/AuthPage';
 import './App.css';
 
 export default function App() {
+  const [session, setSession] = useState(null);
+  const [checkingAuth, setCheckingAuth] = useState(true);
   const [members, setMembers] = useState([]);
   const [monthKey, setMonthKey] = useState('');
   const [monthData, setMonthData] = useState(defaultMonthData());
@@ -22,15 +26,14 @@ export default function App() {
   const [showImport, setShowImport] = useState(false);
   const [currentUser, setCurrentUser] = useState(() => localStorage.getItem('mess_current_user') || '');
 
-  const TABS = [
-    { id: 'calendar', label: 'Calender' },
-    { id: 'meal', label: 'Meal' },
-    { id: 'daily_activity', label: 'Daily Activity' },
-    ...members.map(m => ({ id: 'member_' + m, label: m })),
-    { id: 'summary', label: 'Summary' },
-    { id: 'payment_slip', label: 'Payment Slip' },
-    { id: 'bill_collection', label: 'Bill Collection' },
-  ];
+  useEffect(() => {
+    getSession()
+      .then(s => { if (s) setSession(s); })
+      .catch(e => console.error('getSession error', e))
+      .finally(() => setCheckingAuth(false));
+    const { data: { subscription } } = onAuthChange(s => setSession(s));
+    return () => subscription?.unsubscribe();
+  }, []);
 
   useEffect(() => {
     if (currentUser) localStorage.setItem('mess_current_user', currentUser);
@@ -92,6 +95,25 @@ export default function App() {
     if (monthKey && members.length) saveMembers(members).catch(() => {});
   }, [members, monthKey]);
 
+  if (checkingAuth) {
+    return <div className="app-loading"><div className="spinner" /><p>Loading...</p></div>;
+  }
+
+  if (!session) {
+    return <AuthPage onAuth={() => window.location.reload()} />;
+  }
+
+  const userEmail = session.user.email;
+  const TABS = [
+    { id: 'calendar', label: 'Calender' },
+    { id: 'meal', label: 'Meal' },
+    { id: 'daily_activity', label: 'Daily Activity' },
+    ...members.map(m => ({ id: 'member_' + m, label: m })),
+    { id: 'summary', label: 'Summary' },
+    { id: 'payment_slip', label: 'Payment Slip' },
+    { id: 'bill_collection', label: 'Bill Collection' },
+  ];
+
   if (loading) {
     return <div className="app-loading"><div className="spinner" /><p>Loading ledger...</p></div>;
   }
@@ -103,15 +125,15 @@ export default function App() {
   const renderSheet = () => {
     if (activeTab.startsWith('member_')) {
       const member = activeTab.replace('member_', '');
-      return <MemberSheet member={member} members={members} monthData={monthData} monthKey={monthKey} onUpdate={updateMonthData} currentUser={currentUser} />;
+      return <MemberSheet member={member} members={members} monthData={monthData} monthKey={monthKey} onUpdate={updateMonthData} currentUser={currentUser} userEmail={userEmail} />;
     }
     switch (activeTab) {
       case 'calendar':
         return <CalendarSheet members={members} monthData={monthData} monthKey={monthKey} currentUser={currentUser} />;
       case 'meal':
-        return <MealsSheet members={members} monthData={monthData} monthKey={monthKey} onUpdate={updateMonthData} currentUser={currentUser} />;
+        return <MealsSheet members={members} monthData={monthData} monthKey={monthKey} onUpdate={updateMonthData} currentUser={currentUser} userEmail={userEmail} />;
       case 'daily_activity':
-        return <DailyActivitySheet members={members} monthData={monthData} monthKey={monthKey} onUpdate={updateMonthData} currentUser={currentUser} />;
+        return <DailyActivitySheet members={members} monthData={monthData} monthKey={monthKey} onUpdate={updateMonthData} currentUser={currentUser} userEmail={userEmail} />;
       case 'bill_collection':
         return <BillsSheet members={members} monthData={monthData} monthKey={monthKey} onUpdate={updateMonthData} />;
       case 'summary':
@@ -136,6 +158,8 @@ export default function App() {
             <option value="">Who's using?</option>
             {members.map(m => <option key={m} value={m}>{m}</option>)}
           </select>
+          <span style={{ fontSize: '.7rem', color: 'var(--text-soft)' }}>{userEmail}</span>
+          <button className="btn small secondary" onClick={async () => { await signOut(); }} style={{ fontSize: '.7rem' }}>Logout</button>
         </div>
       </header>
       <main className="app-main">

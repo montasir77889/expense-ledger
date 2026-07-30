@@ -1,7 +1,7 @@
 import { computeTotals } from '../utils/calculations';
 import { fmt, daysInMonth } from '../utils/helpers';
 
-export default function MemberSheet({ member, members, monthData, monthKey, onUpdate, currentUser }) {
+export default function MemberSheet({ member, members, monthData, monthKey, onUpdate, currentUser, userEmail }) {
   const days = daysInMonth(monthKey);
   const t = computeTotals(members, monthData);
   const row = t.rows.find(r => r.member === member);
@@ -23,7 +23,7 @@ export default function MemberSheet({ member, members, monthData, monthKey, onUp
         delete copy[day];
         meals[member] = copy;
       }
-      const log = { date: new Date().toISOString().slice(0, 10), timestamp: new Date().toISOString(), emoji: '🍚', text: 'logged ' + value + ' meals on day ' + day, user: currentUser || member, member, amount: 0, type: 'meal' };
+      const log = { date: new Date().toISOString().slice(0, 10), timestamp: new Date().toISOString(), emoji: '🍚', text: 'logged ' + value + ' meals on day ' + day, user: currentUser || member, member, amount: 0, type: 'meal', email: userEmail };
       return { ...prev, meals, activityLog: [...(prev.activityLog || []), log] };
     });
   };
@@ -74,12 +74,22 @@ export default function MemberSheet({ member, members, monthData, monthKey, onUp
               <span className="excel-c" style={{ width: 60 }}>Date</span>
               <span className="excel-c" style={{ flex: 1 }}>Item</span>
               <span className="excel-c" style={{ width: 70, textAlign: 'right' }}>Amount</span>
+              <span className="excel-c" style={{ width: 30 }}></span>
             </div>
             {myBazar.map((entry, i) => (
               <div key={i} className="excel-row">
                 <span className="excel-c" style={{ width: 60, fontSize: '.75rem', color: 'var(--text-soft)' }}>{entry.date || (entry.timestamp ? entry.timestamp.slice(0, 10) : '—')}</span>
                 <span className="excel-c" style={{ flex: 1 }}>{entry.item || entry.text || 'Bazar'}</span>
                 <span className="excel-c" style={{ width: 70, textAlign: 'right', fontWeight: 600 }}>৳{fmt(entry.amount)}</span>
+                <span className="excel-c" style={{ width: 30, justifyContent: 'center' }}>
+                  <button onClick={() => {
+                    onUpdate(prev => ({
+                      ...prev,
+                      bazar: { ...prev.bazar, [member]: (prev.bazar[member] || []).filter(e => e.id !== entry.id) },
+                      activityLog: (prev.activityLog || []).filter(l => l.refId !== entry.id)
+                    }));
+                  }} style={{ border: 'none', background: 'transparent', color: 'var(--red)', cursor: 'pointer', fontSize: '.78rem', padding: 0 }}>✕</button>
+                </span>
               </div>
             ))}
           </div>
@@ -147,10 +157,22 @@ export default function MemberSheet({ member, members, monthData, monthKey, onUp
             {logs.map((log, i) => (
               <div key={i} className="excel-row">
                 <span className="excel-c" style={{ width: 30, textAlign: 'center' }}>{log.emoji || '📝'}</span>
-                <span className="excel-c" style={{ flex: 1, fontSize: '.78rem' }}>{log.text}</span>
+                <span className="excel-c" style={{ flex: 1, fontSize: '.78rem' }}>
+                  {log.text}
+                  {log.email && <span style={{ display: 'block', fontSize: '.65rem', color: 'var(--text-soft)', fontWeight: 400 }}>by {log.email}</span>}
+                </span>
                 <span className="excel-c" style={{ width: 60, textAlign: 'right', fontSize: '.7rem', color: 'var(--text-soft)' }}>
                   {log.date ? log.date.slice(5) : (log.timestamp ? log.timestamp.slice(5, 10) : '')}
                 </span>
+                {log.type === 'bazar' && (
+                  <button onClick={() => {
+                    onUpdate(prev => ({
+                      ...prev,
+                      bazar: { ...prev.bazar, [log.member]: (prev.bazar[log.member] || []).filter(e => e.id !== log.refId) },
+                      activityLog: (prev.activityLog || []).filter(l => l.id !== log.id)
+                    }));
+                  }} style={{ border: 'none', background: 'transparent', color: 'var(--red)', cursor: 'pointer', fontSize: '.7rem', padding: '4px' }}>✕</button>
+                )}
               </div>
             ))}
           </div>

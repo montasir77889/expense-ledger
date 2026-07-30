@@ -1,6 +1,6 @@
 import { daysInMonth, fmt } from '../utils/helpers';
 
-export default function MealsSheet({ members, monthData, monthKey, onUpdate, currentUser }) {
+export default function MealsSheet({ members, monthData, monthKey, onUpdate, currentUser, userEmail }) {
   const days = daysInMonth(monthKey);
   const [y, m] = monthKey.split('-').map(Number);
   const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
@@ -15,7 +15,7 @@ export default function MealsSheet({ members, monthData, monthKey, onUpdate, cur
         delete copy[day];
         meals[member] = copy;
       }
-      const log = { date: new Date().toISOString().slice(0, 10), timestamp: new Date().toISOString(), emoji: '🍚', text: 'logged ' + value + ' meals on day ' + day, user: currentUser || member, member, amount: 0, type: 'meal' };
+      const log = { date: new Date().toISOString().slice(0, 10), timestamp: new Date().toISOString(), emoji: '🍚', text: 'logged ' + value + ' meals on day ' + day, user: currentUser || member, member, amount: 0, type: 'meal', email: userEmail };
       return { ...prev, meals, activityLog: [...(prev.activityLog || []), log] };
     });
   };
