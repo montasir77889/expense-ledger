@@ -171,22 +171,29 @@ export default function App() {
       XLSX.utils.book_append_sheet(wb, wsAct, 'Activity');
     }
 
+    const metaPayload = JSON.stringify({
+      members, meals: monthData.meals, bazar: monthData.bazar, bills: monthData.bills,
+      cookingDuty: monthData.cookingDuty, watering: monthData.watering,
+      activityLog: monthData.activityLog
+    });
+    const wsMeta = XLSX.utils.aoa_to_sheet([['month-meta:', metaPayload]]);
+    XLSX.utils.book_append_sheet(wb, wsMeta, 'Meta');
+
     XLSX.writeFile(wb, 'ledger-' + monthKey + '.xlsx');
   };
 
   const handleImport = useCallback((parsed) => {
     if (parsed.members && parsed.members.length) setMembers(parsed.members);
-    if (parsed.meals || parsed.bazar || parsed.bills) {
-      setMonthData(prev => ({
-        ...prev,
-        meals: parsed.meals || prev.meals,
-        bazar: parsed.bazar || prev.bazar,
-        bills: parsed.bills || prev.bills,
-        cookingDuty: parsed.cookingDuty || prev.cookingDuty,
-        watering: parsed.watering || prev.watering,
-        activityLog: parsed.activityLog || prev.activityLog
-      }));
-    }
+    setMonthData(prev => {
+      const next = { ...prev };
+      if (parsed.meals && Object.keys(parsed.meals).length) next.meals = parsed.meals;
+      if (parsed.bazar) next.bazar = parsed.bazar;
+      if (parsed.bills) next.bills = parsed.bills;
+      if (parsed.cookingDuty) next.cookingDuty = parsed.cookingDuty;
+      if (parsed.watering) next.watering = parsed.watering;
+      if (parsed.activityLog) next.activityLog = parsed.activityLog;
+      return next;
+    });
     alert('Data imported successfully');
   }, []);
 

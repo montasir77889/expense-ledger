@@ -9,6 +9,40 @@ export default function ImportModal({ onClose, onImport, members, monthKey }) {
 
   function parseSheetData(workbook) {
     const sheetNames = workbook.SheetNames;
+    const result = {
+      members: [],
+      meals: {},
+      bazar: null,
+      bills: null,
+      cookingDuty: null,
+      watering: null,
+      activityLog: null,
+      checkin: null
+    };
+
+    // Try Meta sheet first (from our export)
+    if (sheetNames.includes('Meta')) {
+      const metaSheet = workbook.Sheets['Meta'];
+      const metaData = XLSX.utils.sheet_to_json(metaSheet, { header: 1 });
+      for (const row of metaData) {
+        if (row[0] && String(row[0]).startsWith('month-meta:')) {
+          try {
+            const parsed = JSON.parse(row[1]);
+            result.members = parsed.members || [];
+            result.meals = parsed.meals || {};
+            result.bazar = parsed.bazar || null;
+            result.bills = parsed.bills || null;
+            result.cookingDuty = parsed.cookingDuty || null;
+            result.watering = parsed.watering || null;
+            result.activityLog = parsed.activityLog || null;
+            result.checkin = parsed.checkin || null;
+          } catch {}
+          return result;
+        }
+      }
+    }
+
+    // Fallback: read Meal sheet (first sheet)
     const mainSheet = workbook.Sheets[sheetNames[0]];
     const data = XLSX.utils.sheet_to_json(mainSheet, { header: 1 });
 
@@ -18,7 +52,6 @@ export default function ImportModal({ onClose, onImport, members, monthKey }) {
     const members = [];
     const meals = {};
     const totalRow = data.findIndex(r => String(r[0] || '').trim() === 'Total Meal per day');
-
     const endRow = totalRow !== -1 ? totalRow : data.length;
 
     for (let i = headerRow + 1; i < endRow; i++) {
@@ -33,35 +66,36 @@ export default function ImportModal({ onClose, onImport, members, monthKey }) {
         }
       }
     }
+    result.members = members;
+    result.meals = meals;
 
-    const result = {
-      members,
-      meals,
-      bazar: {},
-      bills: { houseRent: {}, serviceCharge: 0, utilities: [] },
-      cookingDuty: {},
-      watering: {},
-      activityLog: [],
-      checkin: {}
-    };
+    // Read Bazar sheet
+    if (sheetNames.includes('Bazar')) {
+      const bazarSheet = workbook.Sheets['Bazar'];
+      const bazarData = XLSX.utils.sheet_to_json(bazarSheet, { header: 1 });
+      const bazar = {};
+      for (let i = 1; i < bazarData.length; i++) {
+        const row = bazarData[i];
+        if (!row || !row[0]) continue;
+        const member = String(row[0]).trim();
+        const entry = { date: row[1] || '', item: row[2] || 'Bazar', amount: Number(row[3] || 0) };
+        if (!bazar[member]) bazar[member] = [];
+        bazar[member].push(entry);
+      }
+      if (Object.keys(bazar).length) result.bazar = bazar;
+    }
 
-    // Try to read meta from additional sheets
-    if (sheetNames.length > 1) {
-      const metaSheet = workbook.Sheets[sheetNames[1]];
-      const metaData = XLSX.utils.sheet_to_json(metaSheet, { header: 1 });
-      let currentKey = '';
-      metaData.forEach(row => {
-        if (row[0] && String(row[0]).startsWith('month-meta:')) {
-          try {
-            const parsed = JSON.parse(row[1]);
-            if (parsed.bazar) result.bazar = parsed.bazar;
-            if (parsed.bills) result.bills = parsed.bills;
-            if (parsed.cookingDuty) result.cookingDuty = parsed.cookingDuty;
-            if (parsed.watering) result.watering = parsed.watering;
-            if (parsed.activityLog) result.activityLog = parsed.activityLog;
-          } catch {}
-        }
-      });
+    // Read Activity sheet
+    if (sheetNames.includes('Activity')) {
+      const actSheet = workbook.Sheets['Activity'];
+      const actData = XLSX.utils.sheet_to_json(actSheet, { header: 1 });
+      const activityLog = [];
+      for (let i = 1; i < actData.length; i++) {
+        const row = actData[i];
+        if (!row || !row[0]) continue;
+        activityLog.push({ date: row[0], user: row[1] || row[2] || '', text: row[2] || '', amount: Number(row[3] || 0), email: row[4] || '' });
+      }
+      if (activityLog.length) result.activityLog = activityLog;
     }
 
     return result;
