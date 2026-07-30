@@ -253,6 +253,18 @@ input[type="number"].excel-input { text-align: right; }
   background: var(--bg);
 }
 
+/* ---- Stat chips ---- */
+.stat-chip {
+  display: inline-block;
+  padding: 4px 12px;
+  border-radius: 20px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  font-size: .75rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
 /* ---- New Meal Grid ---- */
 .mg-h {
   padding: 6px 4px;
