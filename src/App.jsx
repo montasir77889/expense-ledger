@@ -1,7 +1,9 @@
 import { useState, useEffect, useCallback } from 'react';
+import * as XLSX from 'xlsx';
 import { loadMonthData, saveMonthData, loadMembers, saveMembers, loadMonthsList, saveMonthsList } from './db/firebase';
 import { getSession, signOut, onAuthChange } from './db/auth';
 import { DEFAULT_MEMBERS, defaultMonthData, monthLabel, daysInMonth } from './utils/helpers';
+import { computeTotals } from './utils/calculations';
 import TabBar from './components/TabBar';
 import CalendarSheet from './components/CalendarSheet';
 import MealsSheet from './components/MealsSheet';
@@ -43,8 +45,11 @@ export default function App() {
 
   useEffect(() => {
     if (!showMonthPicker) return;
-    const handler = () => setShowMonthPicker(false);
-    document.addEventListener('click', handler);
+    const handler = (e) => {
+      if (e.target.closest('.month-picker-wrap')) return;
+      setShowMonthPicker(false);
+    };
+    setTimeout(() => document.addEventListener('click', handler), 0);
     return () => document.removeEventListener('click', handler);
   }, [showMonthPicker]);
 
@@ -106,14 +111,59 @@ export default function App() {
   }, [members, monthKey]);
 
   const handleExport = () => {
-    const payload = { monthKey, members, monthData, exportedAt: new Date().toISOString() };
-    const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = 'ledger-' + monthKey + '.json';
-    a.click();
-    URL.revokeObjectURL(url);
+    const wb = XLSX.utils.book_new();
+    const days = daysInMonth(monthKey);
+
+    const mealHeader = ['Name', ...Array.from({length: days}, (_, i) => String(i+1)), 'Total'];
+    const mealRows = members.map(m => {
+      const meals = monthData.meals[m] || {};
+      const row = Array.from({length: days}, (_, i) => meals[i+1] || 0);
+      const total = row.reduce((a, v) => a + Number(v), 0);
+      return [m, ...row, total];
+    });
+    const dayTotals = Array.from({length: days}, (_, i) =>
+      members.reduce((a, m) => a + Number((monthData.meals[m] || {})[i+1] || 0), 0)
+    );
+    mealRows.push(['Total per day', ...dayTotals, dayTotals.reduce((a, v) => a + v, 0)]);
+    const wsMeal = XLSX.utils.aoa_to_sheet([mealHeader, ...mealRows]);
+    XLSX.utils.book_append_sheet(wb, wsMeal, 'Meal');
+
+    const bazarHeader = ['Member', 'Date', 'Item', 'Amount'];
+    const bazarRows = [];
+    members.forEach(m => {
+      (monthData.bazar[m] || []).forEach(e => {
+        bazarRows.push([m, e.date || '', e.item || 'Bazar', e.amount]);
+      });
+    });
+    if (bazarRows.length) {
+      const wsBazar = XLSX.utils.aoa_to_sheet([bazarHeader, ...bazarRows]);
+      XLSX.utils.book_append_sheet(wb, wsBazar, 'Bazar');
+    }
+
+    const billRows = members.map(m => {
+      const rent = Number(monthData.bills.houseRent[m] || 0);
+      const mealBill = computeTotals(members, monthData).rows.find(r => r.member === m)?.mealBill || 0;
+      const utility = (monthData.bills.utilities || []).filter(u => u.participants.includes(m))
+        .reduce((a, u) => a + Number(u.amount) / u.participants.length, 0);
+      const sc = members.length ? Number(monthData.bills.serviceCharge || 0) / members.length : 0;
+      const total = mealBill + utility + sc + rent;
+      return [m, rent, Math.round(utility), Math.round(sc), Math.round(mealBill), Math.round(total)];
+    });
+    const wsBills = XLSX.utils.aoa_to_sheet([
+      ['Member', 'Rent', 'Utility', 'Service Charge', 'Meal Bill', 'Balance'],
+      ...billRows
+    ]);
+    XLSX.utils.book_append_sheet(wb, wsBills, 'Summary');
+
+    const actRows = (monthData.activityLog || []).map(l => [
+      l.date || '', l.user || l.member || '', l.text || '', l.amount || 0, l.email || ''
+    ]);
+    if (actRows.length) {
+      const wsAct = XLSX.utils.aoa_to_sheet([['Date', 'Member', 'Activity', 'Amount', 'By Email'], ...actRows]);
+      XLSX.utils.book_append_sheet(wb, wsAct, 'Activity');
+    }
+
+    XLSX.writeFile(wb, 'ledger-' + monthKey + '.xlsx');
   };
 
   const switchMonth = async (mk) => {
@@ -199,12 +249,11 @@ export default function App() {
     <div className="app">
       <header className="app-header">
         <h1 className="app-title">Ledger</h1>
-        <span className="month-label" onClick={() => setShowMonthPicker(!showMonthPicker)}
+        <span className="month-label month-picker-wrap" onClick={() => setShowMonthPicker(!showMonthPicker)}
           style={{ cursor: 'pointer', position: 'relative', userSelect: 'none' }}>
           {monthLabel(monthKey)} ▾
           {showMonthPicker && (
-            <span style={{ position: 'absolute', top: '100%', left: 0, marginTop: 4, background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 6, boxShadow: '0 4px 12px rgba(0,0,0,.15)', zIndex: 100, minWidth: 140, overflow: 'hidden' }}
-              onClick={e => e.stopPropagation()}>
+            <span className="month-picker-wrap" style={{ position: 'absolute', top: '100%', left: 0, marginTop: 4, background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 6, boxShadow: '0 4px 12px rgba(0,0,0,.15)', zIndex: 100, minWidth: 140, overflow: 'hidden' }}>
               {monthsList.map(mk => (
                 <div key={mk} onClick={() => switchMonth(mk)}
                   style={{ padding: '8px 14px', fontSize: '.82rem', cursor: 'pointer', background: mk === monthKey ? 'var(--bg)' : '', fontWeight: mk === monthKey ? 700 : 400 }}>
@@ -212,7 +261,7 @@ export default function App() {
                 </div>
               ))}
               <div style={{ borderTop: '1px solid var(--border)' }}>
-                <div onClick={async (e) => { e.stopPropagation(); setShowMonthPicker(false); await handleNewMonth(); }}
+                <div onClick={async () => { setShowMonthPicker(false); await handleNewMonth(); }}
                   style={{ padding: '8px 14px', fontSize: '.82rem', cursor: 'pointer', color: 'var(--accent)' }}>
                   + New Month
                 </div>
