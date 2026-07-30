@@ -7,7 +7,7 @@ export function uid() { return (++uidCounter).toString(36); }
 
 export function fmt(n) {
   if (n === undefined || n === null) return '0';
-  return Number(n).toLocaleString('bn-IN', { maximumFractionDigits: 0 });
+  return Number(n).toFixed(2);
 }
 
 export function monthLabel(key) {

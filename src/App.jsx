@@ -155,7 +155,7 @@ export default function App() {
         .reduce((a, u) => a + Number(u.amount) / u.participants.length, 0);
       const sc = members.length ? Number(monthData.bills.serviceCharge || 0) / members.length : 0;
       const total = mealBill + utility + sc + rent;
-      return [m, rent, Math.round(utility), Math.round(sc), Math.round(mealBill), Math.round(total)];
+      return [m, rent, utility, sc, mealBill, total];
     });
     const wsBills = XLSX.utils.aoa_to_sheet([
       ['Member', 'Rent', 'Utility', 'Service Charge', 'Meal Bill', 'Balance'],
