@@ -98,7 +98,10 @@ export default function DailyActivitySheet({ members, monthData, monthKey, onUpd
               {grouped[date].map((log, i) => (
                 <div key={i} className="excel-row" style={{ alignItems: 'stretch' }}>
                   <span className="excel-c" style={{ width: 30, textAlign: 'center', fontSize: '.85rem' }}>{log.emoji || '📝'}</span>
-                  <span className="excel-c" style={{ width: 70, fontWeight: 600, fontSize: '.78rem' }}>{log.user || log.member || '—'}</span>
+                  <span className="excel-c" style={{ width: 90, fontWeight: 600, fontSize: '.75rem', flexDirection: 'column', alignItems: 'flex-start', gap: 1 }}>
+                    <span>{log.member || log.user || '—'}</span>
+                    {log.email && <span style={{ fontSize: '.6rem', color: 'var(--text-soft)', fontWeight: 400 }}>by {log.email}</span>}
+                  </span>
                   {editingId === log.id ? (
                     <span className="excel-c" style={{ flex: 1, gap: 4 }}>
                       <input type="text" value={editItem} onChange={e => setEditItem(e.target.value)}
@@ -109,9 +112,7 @@ export default function DailyActivitySheet({ members, monthData, monthKey, onUpd
                       <button className="btn small secondary" onClick={() => setEditingId(null)} style={{ padding: '2px 8px' }}>✕</button>
                     </span>
                   ) : (
-                    <span className="excel-c" style={{ flex: 1, fontSize: '.78rem' }}>{log.text}
-                      {log.email && <span style={{ display: 'block', fontSize: '.65rem', color: 'var(--text-soft)', fontWeight: 400 }}>by {log.email}</span>}
-                    </span>
+                    <span className="excel-c" style={{ flex: 1, fontSize: '.78rem' }}>{log.text}</span>
                   )}
                   {log.amount > 0 && editingId !== log.id && (
                     <span className="excel-c" style={{ width: 60, textAlign: 'right', fontSize: '.75rem', fontWeight: 600 }}>
