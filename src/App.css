@@ -267,23 +267,13 @@ input[type="number"].excel-input { text-align: right; }
 
 /* ---- New Meal Grid ---- */
 .mg-h {
-  padding: 6px 4px;
+  padding: 4px 2px;
   text-align: center;
   border-bottom: 1px solid var(--border);
   border-right: 1px solid var(--border);
   background: var(--bg);
-  font-size: .72rem;
+  font-size: .65rem;
   font-weight: 600;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 1px;
-}
-.mg-dow {
-  font-size: .55rem;
-  font-weight: 400;
-  color: var(--text-soft);
-  text-transform: uppercase;
 }
 .mg-name {
   position: sticky;
@@ -291,8 +281,8 @@ input[type="number"].excel-input { text-align: right; }
   z-index: 2;
   background: var(--surface);
   text-align: left;
-  padding: 6px 8px;
-  font-size: .75rem;
+  padding: 4px 6px;
+  font-size: .68rem;
   font-weight: 600;
   border-right: 1px solid var(--border);
 }
@@ -303,7 +293,6 @@ input[type="number"].excel-input { text-align: right; }
   background: var(--bg);
 }
 .mg-c {
-  padding: 2px;
   border-bottom: 1px solid var(--border);
   border-right: 1px solid var(--border);
   background: var(--surface);
@@ -313,14 +302,13 @@ input[type="number"].excel-input { text-align: right; }
 }
 .mg-input {
   width: 100%;
-  height: 100%;
-  min-height: 34px;
+  min-height: 26px;
   border: none;
   text-align: center;
-  font-size: .82rem;
+  font-size: .72rem;
   font-family: inherit;
   background: transparent;
-  padding: 4px 2px;
+  padding: 2px 1px;
   outline: none;
   color: var(--text);
   -moz-appearance: textfield;
@@ -332,11 +320,8 @@ input[type="number"].excel-input { text-align: right; }
 }
 .mg-input:focus {
   background: #e8f0fe;
-  border-radius: 4px;
+  border-radius: 3px;
   box-shadow: inset 0 0 0 2px var(--accent);
-}
-.mg-input::placeholder {
-  color: #ccc;
 }
 
 /* ---- Bazar ---- */
@@ -484,9 +469,9 @@ input[type="number"].excel-input { text-align: right; }
   .btn { font-size: .75rem; padding: 5px 12px; }
   .btn.small { font-size: .68rem; padding: 4px 8px; }
 
-  .mg-h { font-size: .65rem; padding: 4px 2px; }
-  .mg-name { font-size: .68rem; padding: 4px 6px; }
-  .mg-input { min-height: 28px; font-size: .75rem; }
+  .mg-h { font-size: .6rem; padding: 3px 1px; }
+  .mg-name { font-size: .62rem; padding: 3px 4px; }
+  .mg-input { min-height: 24px; font-size: .68rem; }
 
   .card { padding: 10px; }
   .empty-state { padding: 24px 16px; }
