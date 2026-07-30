@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { loadMonthData, saveMonthData, loadMembers, saveMembers, loadMonthsList, saveMonthsList } from './db/firebase';
 import { getSession, signOut, onAuthChange } from './db/auth';
-import { DEFAULT_MEMBERS, defaultMonthData, monthLabel } from './utils/helpers';
+import { DEFAULT_MEMBERS, defaultMonthData, monthLabel, daysInMonth } from './utils/helpers';
 import TabBar from './components/TabBar';
 import CalendarSheet from './components/CalendarSheet';
 import MealsSheet from './components/MealsSheet';
@@ -95,6 +95,36 @@ export default function App() {
     if (monthKey && members.length) saveMembers(members).catch(() => {});
   }, [members, monthKey]);
 
+  const handleExport = () => {
+    const payload = { monthKey, members, monthData, exportedAt: new Date().toISOString() };
+    const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'ledger-' + monthKey + '.json';
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
+  const handleNewMonth = async () => {
+    const hasData = monthData && Object.keys(monthData.meals || {}).length > 0;
+    if (hasData && !window.confirm('Data exists for ' + monthLabel(monthKey) + '. Download a backup first?\n\nClick OK to continue without backup, Cancel to stay.')) {
+      return;
+    }
+    const now = new Date();
+    const mk = now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2, '0');
+    if (mk === monthKey) { alert('Already on current month.'); return; }
+    const months = await loadMonthsList();
+    if (!months.includes(mk)) {
+      await saveMonthsList([...months, mk]);
+    }
+    setMonthKey(mk);
+    setMonthData(defaultMonthData());
+    setActiveTab('calendar');
+    const md = await loadMonthData(mk);
+    setMonthData(md || defaultMonthData());
+  };
+
   if (checkingAuth) {
     return <div className="app-loading"><div className="spinner" /><p>Loading...</p></div>;
   }
@@ -150,7 +180,9 @@ export default function App() {
       <header className="app-header">
         <h1 className="app-title">Ledger</h1>
         <span className="month-label">{monthLabel(monthKey)}</span>
-        <button className="btn small secondary" onClick={() => setShowImport(true)} style={{ fontSize: '.7rem', marginLeft: 8 }}>Import</button>
+        <button className="btn small secondary" onClick={handleExport} style={{ fontSize: '.7rem', marginLeft: 8 }}>Export</button>
+        <button className="btn small secondary" onClick={handleNewMonth} style={{ fontSize: '.7rem' }}>+ New Month</button>
+        <button className="btn small secondary" onClick={() => setShowImport(true)} style={{ fontSize: '.7rem' }}>Import</button>
         <div style={{ flex: 1 }} />
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
           <select value={currentUser} onChange={e => setCurrentUser(e.target.value)}
