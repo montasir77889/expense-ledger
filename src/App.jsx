@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import * as XLSX from 'xlsx';
 import { loadMonthData, saveMonthData, loadMembers, saveMembers, loadMonthsList, saveMonthsList } from './db/firebase';
 import { getSession, signOut, onAuthChange } from './db/auth';
@@ -29,6 +29,8 @@ export default function App() {
   const [showMonthPicker, setShowMonthPicker] = useState(false);
   const [monthsList, setMonthsList] = useState([]);
   const [currentUser, setCurrentUser] = useState(() => localStorage.getItem('mess_current_user') || '');
+  const monthLabelRef = useRef(null);
+  const [monthPickerStyle, setMonthPickerStyle] = useState({});
 
   useEffect(() => {
     getSession()
@@ -246,7 +248,13 @@ export default function App() {
     <div className="app">
       <header className="app-header">
         <h1 className="app-title">Ledger</h1>
-        <span className="month-label" onClick={() => setShowMonthPicker(!showMonthPicker)}
+        <span className="month-label" ref={monthLabelRef} onClick={() => {
+          if (!showMonthPicker && monthLabelRef.current) {
+            const rect = monthLabelRef.current.getBoundingClientRect();
+            setMonthPickerStyle({ top: rect.bottom + 4, left: rect.left });
+          }
+          setShowMonthPicker(!showMonthPicker);
+        }}
           style={{ cursor: 'pointer', userSelect: 'none' }}>
           {monthLabel(monthKey)} ▾
         </span>
@@ -265,7 +273,7 @@ export default function App() {
       </header>
       {showMonthPicker && (
         <div style={{
-          position: 'fixed', top: 80, left: 16, zIndex: 100,
+          position: 'fixed', ...monthPickerStyle, zIndex: 100,
           background: 'var(--surface)', border: '1px solid var(--border)',
           borderRadius: 8, boxShadow: '0 4px 20px rgba(0,0,0,.2)',
           minWidth: 160, overflow: 'hidden'

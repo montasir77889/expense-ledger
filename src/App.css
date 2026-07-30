@@ -354,3 +354,72 @@ input[type="number"].excel-input { text-align: right; }
 .b-title { font-size: .7rem; font-weight: 600; text-transform: uppercase; color: var(--text-soft); margin-top: 4px; }
 .b-name { font-weight: 600; margin-top: 2px; }
 .b-amt { font-size: .78rem; color: var(--text-soft); }
+
+.modal-overlay {
+  position: fixed; inset: 0; background: rgba(0,0,0,.4);
+  display: flex; align-items: center; justify-content: center;
+  z-index: 200; padding: 16px;
+}
+.modal-box {
+  background: var(--surface); border-radius: 10px; padding: 20px;
+  width: 100%; max-width: 420px; box-shadow: 0 8px 30px rgba(0,0,0,.2);
+}
+.modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; }
+.modal-header h2 { font-size: 1rem; }
+.modal-close { border: none; background: none; font-size: 1.4rem; cursor: pointer; color: var(--text-soft); padding: 0 4px; }
+
+/* ---- Edit Form (Bills) ---- */
+.edit-form { display: flex; flex-direction: column; gap: 10px; }
+.ef-row { display: flex; flex-direction: column; gap: 4px; }
+.ef-row label { font-size: .75rem; font-weight: 600; color: var(--text-soft); }
+.ef-members { display: flex; flex-wrap: wrap; gap: 8px; }
+.ef-member { font-size: .78rem; display: flex; align-items: center; gap: 4px; cursor: pointer; }
+
+/* ---- Mobile responsive ---- */
+@media (max-width: 700px) {
+  .app-header { flex-wrap: wrap; gap: 6px; padding: 8px 10px; }
+  .app-title { font-size: 1rem; }
+  .month-label { font-size: .75rem; padding: 2px 8px; }
+  .app-main { padding: 8px 10px; }
+
+  .tab-btn { min-width: 44px; padding: 6px 4px; font-size: .6rem; }
+  .tab-icon { font-size: .95rem; }
+
+  .section-title { font-size: .85rem; margin: 12px 0 6px; }
+  .sub-title { font-size: .75rem; }
+
+  .badge-card { min-width: 80px; padding: 8px; }
+  .b-icon { font-size: 1.1rem; }
+  .b-name { font-size: .75rem; }
+
+  .excel-c { padding: 6px; font-size: .72rem; }
+  .excel-input { font-size: .75rem; padding: 4px 6px; }
+
+  .btn { font-size: .75rem; padding: 5px 12px; }
+  .btn.small { font-size: .68rem; padding: 4px 8px; }
+
+  .meal-grid { font-size: .65rem; grid-template-columns: 70px repeat(31, 1fr); }
+  .meal-grid-header, .meal-grid-cell { padding: 2px; min-width: 22px; font-size: .6rem; }
+
+  .card { padding: 10px; }
+  .empty-state { padding: 24px 16px; }
+
+  .slip { padding: 12px; }
+  .net-payment { font-size: .95rem; }
+
+  .login-card { padding: 28px 20px; }
+  .login-card h1 { font-size: 1.3rem; }
+}
+
+@media (max-width: 480px) {
+  .app-header { flex-direction: column; align-items: stretch; gap: 4px; }
+  .app-header > .btn { align-self: flex-start; }
+  .app-header > div:last-child { flex-wrap: wrap; justify-content: flex-start; }
+  .tab-btn { min-width: 38px; padding: 5px 3px; font-size: .55rem; }
+  .tab-icon { font-size: .85rem; }
+  .tab-btn span { display: none; }
+  .badge-card { min-width: 70px; }
+  .excel-row { flex-wrap: wrap; }
+  .bazar-entry { flex-wrap: wrap; font-size: .75rem; }
+  .meal-grid-cell input[type="number"] { min-width: 16px; font-size: .65rem; }
+}

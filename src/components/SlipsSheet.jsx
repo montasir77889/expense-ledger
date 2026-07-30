@@ -5,9 +5,10 @@ function printSlip(r, monthKey) {
   const label = monthLabel(monthKey);
   const bal = r.total;
   const balText = bal > 0 ? ' (Due)' : bal < 0 ? ' (Extra)' : '';
-  const html = `<!DOCTYPE html><html><head><meta charset="utf-8"><title>Payment Slip - ${r.member}</title>
+  const html = `<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Payment Slip - ${r.member}</title>
 <style>
-  body { font-family: 'Courier New', monospace; padding: 40px; max-width: 400px; margin: auto; }
+  * { box-sizing: border-box; }
+  body { font-family: 'Courier New', monospace; padding: 40px 20px; max-width: 400px; margin: auto; }
   h1 { font-size: 20px; text-align: center; margin-bottom: 4px; }
   .period { text-align: center; color: #666; font-size: 14px; margin-bottom: 24px; }
   table { width: 100%; border-collapse: collapse; font-size: 15px; }
@@ -17,8 +18,9 @@ function printSlip(r, monthKey) {
   .total td:last-child { color: ${bal > 0 ? '#dc2626' : '#16a34a'}; }
   hr { margin: 20px 0; border: none; border-top: 1px dashed #999; }
   .footer { text-align: center; color: #999; font-size: 12px; margin-top: 16px; }
+  @media print { body { padding: 20px; } }
 </style></head><body>
-  <h1>Mess Khata</h1>
+  <h1>Ledger</h1>
   <div class="period">${label}</div>
   <h2 style="font-size:18px;margin-bottom:16px">${r.member}</h2>
   <table>
