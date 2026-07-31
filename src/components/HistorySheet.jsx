@@ -4,7 +4,6 @@ import { fmt } from '../utils/helpers';
 const TYPE_META = {
   meal: { label: 'Meals', emoji: '🍚', color: 'var(--green)' },
   bazar: { label: 'Bazar', emoji: '🛒', color: '#d97706' },
-  delete: { label: 'Deleted', emoji: '🗑', color: '#6b7280' },
 };
 const TYPE_KEYS = Object.keys(TYPE_META);
 
@@ -53,7 +52,6 @@ export default function HistorySheet({ members, monthData, currentUser }) {
 
   const totalBazar = filtered.filter(l => l.type === 'bazar').reduce((a, l) => a + Number(l.amount || 0), 0);
   const totalMeals = filtered.reduce((a, l) => a + mealsInLog(l), 0);
-  const totalDeleted = filtered.filter(l => l.type === 'delete').length;
 
   const toggleDate = (date) => setCollapsed(prev => ({ ...prev, [date]: !prev[date] }));
 
@@ -99,11 +97,6 @@ export default function HistorySheet({ members, monthData, currentUser }) {
           <div className="b-icon">🍚</div>
           <div className="b-title">Meals</div>
           <div className="b-name">{totalMeals}</div>
-        </div>
-        <div className="badge-card">
-          <div className="b-icon">🗑</div>
-          <div className="b-title">Deleted</div>
-          <div className="b-name">{totalDeleted}</div>
         </div>
       </div>
 
