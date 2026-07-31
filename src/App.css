@@ -456,7 +456,8 @@ input[type="number"].excel-input { text-align: right; }
   .month-label { font-size: .75rem; padding: 2px 8px; }
   .app-main { padding: 8px 10px; }
 
-  .tab-btn { min-width: 44px; padding: 6px 4px; font-size: .6rem; }
+  .tab-bar { flex-wrap: wrap; overflow-x: visible; }
+  .tab-btn { flex: 1 1 20%; min-width: 0; padding: 6px 2px; font-size: .6rem; }
   .tab-icon { font-size: .95rem; }
 
   .section-title { font-size: .85rem; margin: 12px 0 6px; }
@@ -490,9 +491,8 @@ input[type="number"].excel-input { text-align: right; }
   .app-header { flex-direction: column; align-items: stretch; gap: 4px; }
   .app-header > .btn { align-self: flex-start; }
   .app-header > div:last-child { flex-wrap: wrap; justify-content: flex-start; }
-  .tab-btn { min-width: 38px; padding: 5px 3px; font-size: .55rem; }
+  .tab-btn { flex: 1 1 25%; min-width: 0; padding: 6px 2px; font-size: .55rem; }
   .tab-icon { font-size: .85rem; }
-  .tab-btn span { display: none; }
   .badge-card { min-width: 70px; }
   .excel-row { flex-wrap: wrap; }
   .bazar-entry { flex-wrap: wrap; font-size: .75rem; }
