@@ -44,9 +44,16 @@ export function computeTotals(members, monthData) {
   const eb = monthData.bills.electricityBill || { total: 0, present: {}, paidBy: '' };
   const roomsPresent = eb.present || {};
   const totalElectricity = Number(eb.total) || 0;
-  const perRoom = ROOMS.length ? totalElectricity / ROOMS.length : 0;
+  const occupiedCount = ROOMS.filter((_, ri) => {
+    const stored = roomsPresent[ri];
+    if (stored === undefined) return true;
+    return stored.length > 0;
+  }).length;
+  const perRoom = totalElectricity / (occupiedCount || ROOMS.length);
   ROOMS.forEach((room, ri) => {
-    const present = roomsPresent[ri] || room.members;
+    const stored = roomsPresent[ri];
+    if (stored !== undefined && stored.length === 0) return;
+    const present = stored && stored.length ? stored : room.members;
     const perHead = present.length ? perRoom / present.length : 0;
     present.forEach(name => {
       const canon = matchMember(name, members);

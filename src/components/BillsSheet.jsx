@@ -34,7 +34,6 @@ export default function BillsSheet({ members, monthData, monthKey, onUpdate }) {
       const eb = { ...(prev.bills.electricityBill || { total: 0, present: {} }) };
       if (!eb.present) eb.present = {};
       const roomPresent = [...(eb.present[roomIdx] || ROOMS[roomIdx].members)];
-      if (roomPresent.includes(member) && roomPresent.length === 1) return prev;
       if (roomPresent.includes(member)) {
         eb.present = { ...eb.present, [roomIdx]: roomPresent.filter(m => m !== member) };
       } else {
@@ -54,7 +53,12 @@ export default function BillsSheet({ members, monthData, monthKey, onUpdate }) {
 
   const eb = monthData.bills.electricityBill || { total: 0, present: {}, paidBy: '' };
   const ebPresent = eb.present || {};
-  const electricityPerRoom = ROOMS.length ? eb.total / ROOMS.length : 0;
+  const occupiedCount = ROOMS.filter((_, ri) => {
+    const stored = ebPresent[ri];
+    if (stored === undefined) return true;
+    return stored.length > 0;
+  }).length;
+  const electricityPerRoom = eb.total / (occupiedCount || ROOMS.length);
 
   const saveUtility = () => {
     if (!billForm.name || !billForm.amount) return;
@@ -126,12 +130,12 @@ export default function BillsSheet({ members, monthData, monthKey, onUpdate }) {
           </span>
         </div>
         {ROOMS.map((room, ri) => {
-          const present = ebPresent[ri] || room.members;
-          const roomShare = electricityPerRoom;
+          const present = ebPresent[ri] !== undefined ? ebPresent[ri] : room.members;
+          const roomShare = present.length ? electricityPerRoom : 0;
           const perHead = present.length ? roomShare / present.length : 0;
           return (
             <div key={ri} className="card" style={{ marginBottom: 6, padding: '8px 10px', border: '1px solid var(--border)', borderRadius: 'var(--radius)' }}>
-              <div style={{ fontWeight: 600, fontSize: '.78rem', marginBottom: 4 }}>{room.name} — ৳{fmt(roomShare)}</div>
+              <div style={{ fontWeight: 600, fontSize: '.78rem', marginBottom: 4 }}>{room.name} — ৳{fmt(roomShare)}{!present.length && <span style={{ color: 'var(--red)', fontSize: '.68rem' }}> (empty)</span>}</div>
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
                 {room.members.map(m => {
                   const isPresent = present.includes(m);
