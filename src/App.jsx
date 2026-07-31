@@ -105,9 +105,9 @@ export default function App() {
   const handleNewMonth = async () => {
     const hasData = monthData && Object.keys(monthData.meals || {}).length > 0;
     if (hasData && !window.confirm('Data exists for ' + monthLabel(monthKey) + '. Click OK to continue, Cancel to stay.')) return;
-    const now = new Date();
-    const mk = now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2, '0');
-    if (mk === monthKey) { alert('Already on current month.'); return; }
+    const [cy, cm] = monthKey.split('-').map(Number);
+    const mk = cm === 12 ? (cy + 1) + '-01' : cy + '-' + String(cm + 1).padStart(2, '0');
+    if (mk === monthKey) { alert('Already on that month.'); return; }
     const months = await loadMonthsList();
     if (!months.includes(mk)) await saveMonthsList([...months, mk]);
     setShowMonthPicker(false);
