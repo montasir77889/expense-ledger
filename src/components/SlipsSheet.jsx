@@ -66,7 +66,7 @@ export default function SlipsSheet({ members, monthData, monthKey }) {
                 </td>
               </tr>
               <tr><td>Bazar Given</td><td className="num">৳{fmt(r.bazar)}</td></tr>
-              <tr><td>Utility Bill</td><td className="num">৳{fmt(r.utilityBill)}</td></tr>
+              <tr><td>Utility Bill</td><td className="num">৳{r.utilityBill}</td></tr>
               <tr><td>Service Charge</td><td className="num">৳{fmt(r.serviceCharge)}</td></tr>
               <tr><td>House Rent</td><td className="num">৳{fmt(r.rent)}</td></tr>
             </tbody>

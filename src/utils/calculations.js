@@ -23,7 +23,7 @@ export function computeTotals(members, monthData) {
   const utilityByMember = {};
   members.forEach(m => utilityByMember[m] = 0);
   (monthData.bills.utilities || []).forEach(u => {
-    const parts = u.participants || [];
+    const parts = [...new Set((u.participants || []).map(p => matchMember(p, members)).filter(Boolean))];
     if (!parts.length) return;
     if (u.mode === 'custom') {
       parts.forEach(p => {
@@ -33,8 +33,9 @@ export function computeTotals(members, monthData) {
       const share = Number(u.amount || 0) / parts.length;
       parts.forEach(p => { utilityByMember[p] = (utilityByMember[p] || 0) + share; });
     }
-    if (u.paidBy) {
-      utilityByMember[u.paidBy] = (utilityByMember[u.paidBy] || 0) - Number(u.amount || 0);
+    const payer = matchMember(u.paidBy, members);
+    if (payer) {
+      utilityByMember[payer] = (utilityByMember[payer] || 0) - Number(u.amount || 0);
     }
   });
 

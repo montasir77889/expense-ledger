@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import * as XLSX from 'xlsx';
 import { loadMonthData, saveMonthData, loadMembers, saveMembers, loadMonthsList, saveMonthsList } from './db/firebase';
 import { getSession, signOut, onAuthChange } from './db/auth';
-import { DEFAULT_MEMBERS, defaultMonthData, monthLabel, daysInMonth, fmt } from './utils/helpers';
+import { DEFAULT_MEMBERS, defaultMonthData, monthLabel, daysInMonth, fmt, canonicalizeMembers } from './utils/helpers';
 import { computeTotals } from './utils/calculations';
 import TabBar from './components/TabBar';
 import CalendarSheet from './components/CalendarSheet';
@@ -72,7 +72,8 @@ export default function App() {
     (async () => {
       try {
         const [mems, months] = await Promise.all([loadMembers(), loadMonthsList()]);
-        setMembers(mems.length ? mems : DEFAULT_MEMBERS);
+        const cm = canonicalizeMembers(mems);
+        setMembers(cm.length ? cm : DEFAULT_MEMBERS);
         let mk = months.length ? months[months.length - 1] : '';
         if (!mk) {
           const now = new Date();

@@ -228,7 +228,7 @@ export default function BillsSheet({ members, monthData, monthKey, onUpdate }) {
             ))}
           </div>
           <div style={{ fontSize: '.75rem', color: 'var(--text-soft)', marginTop: 4 }}>
-            Each: ৳{fmt(u.mode === 'custom' ? 0 : Number(u.amount) / (u.participants.length || 1))}
+            Each: ৳{u.mode === 'custom' ? 0 : Number(u.amount) / (u.participants.length || 1)}
           </div>
         </div>
       ))}

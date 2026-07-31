@@ -142,7 +142,7 @@ export default function MemberSheet({ member, members, monthData, monthKey, onUp
               {u.paidBy === member ? <span style={{ color: 'var(--green)', fontSize: '.7rem', marginLeft: 4 }}>(paid full)</span> : ''}
               {u.paidBy && u.paidBy !== member ? <span style={{ color: 'var(--text-soft)', fontSize: '.7rem', marginLeft: 4 }}>(paid by {u.paidBy})</span> : ''}
             </span>
-            <span className="excel-c" style={{ width: 80, textAlign: 'right' }}>৳{fmt(u.mode === 'custom' ? (u.customAmounts[member] || 0) : Number(u.amount) / u.participants.length)}</span>
+            <span className="excel-c" style={{ width: 80, textAlign: 'right' }}>৳{u.mode === 'custom' ? (u.customAmounts[member] || 0) : Number(u.amount) / u.participants.length}</span>
           </div>
         ))}
         <div className="excel-row">

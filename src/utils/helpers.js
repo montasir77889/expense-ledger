@@ -22,6 +22,14 @@ export function matchMember(name, members) {
   return members.find(m => m.toLowerCase() === String(name).toLowerCase()) || null;
 }
 
+export function canonicalizeMembers(list) {
+  const canonical = ROOMS.flatMap(r => r.members);
+  return (list || []).map(n => {
+    const hit = canonical.find(m => m.toLowerCase() === String(n).toLowerCase());
+    return hit || n;
+  });
+}
+
 export function parseNum(v) {
   if (v === '' || v === undefined || v === null) return 0;
   if (typeof v === 'number') return v;
