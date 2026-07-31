@@ -15,6 +15,13 @@ export function fmt(n) {
   return Number(n).toFixed(2);
 }
 
+export function matchMember(name, members) {
+  if (!name) return null;
+  const exact = members.find(m => m === name);
+  if (exact) return exact;
+  return members.find(m => m.toLowerCase() === String(name).toLowerCase()) || null;
+}
+
 export function parseNum(v) {
   if (v === '' || v === undefined || v === null) return 0;
   if (typeof v === 'number') return v;

@@ -1,4 +1,4 @@
-import { parseNum, ROOMS } from './helpers';
+import { parseNum, matchMember, ROOMS } from './helpers';
 
 export function computeTotals(members, monthData) {
   const totalBazar = members.reduce((s, m) =>
@@ -48,8 +48,9 @@ export function computeTotals(members, monthData) {
   ROOMS.forEach((room, ri) => {
     const present = roomsPresent[ri] || room.members;
     const perHead = present.length ? perRoom / present.length : 0;
-    present.forEach(m => {
-      electricityByMember[m] = (electricityByMember[m] || 0) + perHead;
+    present.forEach(name => {
+      const canon = matchMember(name, members);
+      if (canon) electricityByMember[canon] = (electricityByMember[canon] || 0) + perHead;
     });
   });
   // If one person paid the full bill, credit them the full amount

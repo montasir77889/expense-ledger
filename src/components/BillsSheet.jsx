@@ -34,6 +34,7 @@ export default function BillsSheet({ members, monthData, monthKey, onUpdate }) {
       const eb = { ...(prev.bills.electricityBill || { total: 0, present: {} }) };
       if (!eb.present) eb.present = {};
       const roomPresent = [...(eb.present[roomIdx] || ROOMS[roomIdx].members)];
+      if (roomPresent.includes(member) && roomPresent.length === 1) return prev;
       if (roomPresent.includes(member)) {
         eb.present = { ...eb.present, [roomIdx]: roomPresent.filter(m => m !== member) };
       } else {
