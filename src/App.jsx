@@ -11,6 +11,7 @@ import DailyActivitySheet from './components/DailyActivitySheet';
 import BillsSheet from './components/BillsSheet';
 import ReportsSheet from './components/ReportsSheet';
 import SlipsSheet from './components/SlipsSheet';
+import HistorySheet from './components/HistorySheet';
 import MemberSheet from './components/MemberSheet';
 import ImportModal from './components/ImportModal';
 import AuthPage from './components/AuthPage';
@@ -250,6 +251,8 @@ export default function App() {
         return <MealsSheet members={members} monthData={monthData} monthKey={monthKey} onUpdate={updateMonthData} currentUser={currentUser} userEmail={userEmail} />;
       case 'daily_activity':
         return <DailyActivitySheet members={members} monthData={monthData} monthKey={monthKey} onUpdate={updateMonthData} currentUser={currentUser} userEmail={userEmail} />;
+      case 'history':
+        return <HistorySheet members={members} monthData={monthData} currentUser={currentUser} />;
       case 'bill_collection':
         return <BillsSheet members={members} monthData={monthData} monthKey={monthKey} onUpdate={updateMonthData} />;
       case 'summary':
@@ -280,6 +283,7 @@ export default function App() {
         </span>
         <button className="btn small secondary" onClick={handleExport} style={{ fontSize: '.7rem', marginLeft: 4 }}>Export</button>
         <button className="btn small secondary" onClick={() => setShowImport(true)} style={{ fontSize: '.7rem' }}>Import</button>
+        <button className={'btn small' + (activeTab === 'history' ? '' : ' secondary')} onClick={() => setActiveTab('history')} style={{ fontSize: '.7rem', marginLeft: 4 }}>🕘 History</button>
         <div style={{ flex: 1 }} />
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
           <select value={currentUser} onChange={e => setCurrentUser(e.target.value)}
