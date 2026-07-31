@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import * as XLSX from 'xlsx';
 import { loadMonthData, saveMonthData, loadMembers, saveMembers, loadMonthsList, saveMonthsList } from './db/firebase';
 import { getSession, signOut, onAuthChange } from './db/auth';
-import { DEFAULT_MEMBERS, defaultMonthData, monthLabel, daysInMonth, fmt, canonicalizeMembers } from './utils/helpers';
+import { DEFAULT_MEMBERS, defaultMonthData, monthLabel, daysInMonth, fmt, canonicalizeMembers, matchMember } from './utils/helpers';
 import { computeTotals } from './utils/calculations';
 import TabBar from './components/TabBar';
 import CalendarSheet from './components/CalendarSheet';
@@ -44,6 +44,13 @@ export default function App() {
   useEffect(() => {
     if (currentUser) localStorage.setItem('mess_current_user', currentUser);
   }, [currentUser]);
+
+  useEffect(() => {
+    if (currentUser) {
+      const canon = matchMember(currentUser, members);
+      if (canon && canon !== currentUser) setCurrentUser(canon);
+    }
+  }, [members, currentUser]);
 
   useEffect(() => {
     if (!showMonthPicker) return;
