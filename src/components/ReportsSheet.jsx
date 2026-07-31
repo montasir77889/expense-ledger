@@ -35,7 +35,7 @@ export default function ReportsSheet({ members, monthData }) {
               <span className="excel-c" style={{ flex: 1, fontWeight: 600 }}>{r.member}</span>
               <span className="excel-c" style={{ width: 60, textAlign: 'right' }}>{r.meals}</span>
               <span className="excel-c" style={{ width: 80, textAlign: 'right' }}>৳{fmt(r.bazar)}</span>
-              <span className="excel-c" style={{ width: 80, textAlign: 'right' }}>৳{r.utilityBill}</span>
+              <span className="excel-c" style={{ width: 80, textAlign: 'right' }}>৳{r.utilityBill.toFixed(3)}</span>
               <span className="excel-c" style={{ width: 70, textAlign: 'right' }}>৳{fmt(r.electricityBill)}</span>
               <span className="excel-c" style={{ width: 80, textAlign: 'right' }}>৳{fmt(r.rent)}</span>
               <span className="excel-c" style={{ width: 70, textAlign: 'right' }}>৳{fmt(r.serviceCharge)}</span>
